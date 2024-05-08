@@ -198,7 +198,8 @@ static void pmm_init() {
     
     printf("buddy first address: %p\n", (void*)first_buddy_addr + HEADER_SIZE);
     printf("next buddy pstr: %p\n", (void*)first_buddy_addr->next + HEADER_SIZE);   
-    
+    printf("first buddy size: %d\n", first_buddy_addr->size);
+
     printf("small sum: %d, and left size: %d\n", small_sum, left_size);
     printf("first small pstr: %p\nnext small pstr: %p\n",(void*)first_small_addr + HEADER_SIZE, (void*)first_small_addr->next + HEADER_SIZE);
     printf("a random small pstr: %p \n", (void*)first_small_addr + (rand() % small_sum) * SMALL_SIZE + HEADER_SIZE);
