@@ -41,7 +41,7 @@ header_t read_header(uintptr_t addr) {
     header.size = 0; 
     return header;
 }
-void write_header(uintptr_t addr, header_t header) {
+void write_header(void* addr, header_t header) {
     *((lock_t*)addr)            = header.mutex;
     *((size_t*)(addr + 4))      = header.size;
     *((bool*)(addr + 8))        = header.occupied;
@@ -76,9 +76,10 @@ static void pmm_init() {
     header.occupied = false;
     header.size = (int)pmsize - HEADER_SIZE; 
 
-    printf("size of header: %d\nsize of mutex: %d\nsize of occupied: %d\nsize of size:%d\n size of next: %d\n",
+    printf("size of header: %d\nsize of mutex: %d\nsize of occupied: %d\nsize of size:%d\nsize of next: %d\n",
     sizeof(header), sizeof(header.mutex), sizeof(header.occupied), sizeof(header.size), sizeof(header.next));
     printf("current header size: %d\n",header.size);
+    write_header(heap.start, header);
 }
 
 MODULE_DEF(pmm) = {
