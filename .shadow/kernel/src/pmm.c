@@ -129,13 +129,7 @@ static void pmm_init() {
         "Got %d MiB heap: [%p, %p)\n",
         pmsize >> 20, heap.start, heap.end
     );
-    header_t header;
-    lock_init(&header.mutex);
-    header.next = 0;
-    header.occupied = false;
-    header.size = (int)pmsize - HEADER_SIZE; 
-    printf("heap start: %d and end: %d \n", heap.start, heap.end);
-    write_header(heap.start, header);
+    
     //67108864 
 
     //init the buddy segement.
