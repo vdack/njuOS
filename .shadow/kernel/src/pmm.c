@@ -32,6 +32,7 @@ typedef struct _header {
     
 } header_t;
 #define HEADER_SIZE sizeof(header_t)
+#define NONE_NEXT 0
 
 typedef struct _list_header {
     lock_t mutex;
@@ -42,13 +43,32 @@ typedef struct _list_header {
 
 list_header_t buddy_list;
 
-header_t read_header(void* addr) {
+inline static int get_max_in(int max) {
+    int t = 1;
+    while(t < max) {
+        t = t << 1;
+    }
+    t = t >> 1;
+    return t;
+}
+
+inline static header_t read_header(void* addr) {
     header_t header = *((header_t*)addr); 
     return header;
 }
-void write_header(void* addr, header_t header) {
+inline static void write_header(void* addr, header_t header) {
     *((header_t*)addr) = header;
 }
+inline static header_t construct_header(size_t size, uintptr_t next) {
+    header_t header;
+    header.occupied = false;
+    header.size = size;
+    header.next = next;
+    lock_init(&header.mutex);
+    return header;
+}
+#define MB_TO_BYTES(x) (x << 20)
+#define BYTES_TO_MB(x) (x >> 20)
 
 static void *kalloc(size_t size) {
     // TODO
@@ -79,6 +99,16 @@ static void pmm_init() {
     header.size = (int)pmsize - HEADER_SIZE; 
     printf("heap start: %d and end: %d \n", heap.start, heap.end);
     write_header(heap.start, header);
+    //67108864 
+
+    //init the buddy segement.
+        int buddy_size_MB = get_max_in(BYTES_TO_MB(pmsize));
+        header_t buddy_header = construct_header(MB_TO_BYTES(buddy_size_MB), NONE_NEXT);
+        intptr_t buddy_h = (intptr_t)heap.end - MB_TO_BYTES(buddy_size_MB) - HEADER_SIZE;
+        write_header((void*)buddy_h, buddy_header);
+        printf("buddy first address: %p\n", (void*)buddy_h - HEADER_SIZE);
+    //
+
 
 }
 
