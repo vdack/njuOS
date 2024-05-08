@@ -77,9 +77,12 @@ inline static header_t construct_header(size_t size, void* next) {
 
 // static list_header_t buddy_list;
 
-static header_t* first_buddy_addr;
-static int buddy_sum;
 #define BUDDY_SIZE (32 << 20)
+#define SMALL_SIZE 256
+static header_t* first_buddy_addr;
+static header_t* first_small_addr;
+static int buddy_sum;
+static int small_sum;
 
 
 // helper function 
@@ -136,24 +139,43 @@ static void pmm_init() {
     //67108864 
 
     //init the buddy segement.
+    
     buddy_sum = 1;
     uintptr_t left_size = pmsize - BUDDY_SIZE;
     header_t last_buddy_header = construct_header(BUDDY_SIZE - HEADER_SIZE, NONE_NEXT);
-    void* last_buddy_addr = heap.end - BUDDY_SIZE - HEADER_SIZE;
-    write_header(last_buddy_addr, last_buddy_header);
+    void* last_addr = heap.end - BUDDY_SIZE - HEADER_SIZE;
+    write_header(last_addr, last_buddy_header);
 
     while (left_size >= (2 * BUDDY_SIZE)) {
         buddy_sum += 1;
-        header_t buddy_header = construct_header(BUDDY_SIZE - HEADER_SIZE, last_buddy_addr);
-        last_buddy_addr = last_buddy_addr - BUDDY_SIZE;
-        write_header(last_buddy_addr, buddy_header);
+        header_t buddy_header = construct_header(BUDDY_SIZE - HEADER_SIZE, last_addr);
+        last_addr = last_addr - BUDDY_SIZE;
+        write_header(last_addr, buddy_header);
         left_size -= BUDDY_SIZE;
     }
-    first_buddy_addr = last_buddy_addr;
+    first_buddy_addr = last_addr;        
+    
+    // init small 
+    
+    small_sum = 0;
+    while (left_size > SMALL_SIZE) {
+        small_sum += 1;
+        header_t small_header = construct_header(SMALL_SIZE - HEADER_SIZE, last_addr);
+        last_addr = last_addr - SMALL_SIZE;
+        write_header(last_addr, small_header);
+        left_size -= SMALL_SIZE;
+    }
+    header_t small_end_header = construct_header(SMALL_SIZE - HEADER_SIZE, last_addr);
+    write_header((first_buddy_addr - SMALL_SIZE), small_end_header);
+    first_small_addr = last_addr;
+
+    
     printf("current buddy num: %d and left size: %d\n", buddy_sum, left_size);
     printf("buddy first address: %p\n", (void*)first_buddy_addr + HEADER_SIZE);
-    printf("next buddy pstr: %p\n", (void*)first_buddy_addr->next + HEADER_SIZE);                    
-    //
+    printf("next buddy pstr: %p\n", (void*)first_buddy_addr->next + HEADER_SIZE);   
+    
+    printf("small sum: %d, and left size: %d\n", small_sum, left_size);
+    printf("first small pstr: %p\nnext small pstr: %p\n",(void*)first_small_addr + HEADER_SIZE, (void*)first_small_addr->next + HEADER_SIZE);
 
 
 }
