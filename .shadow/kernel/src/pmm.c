@@ -33,6 +33,15 @@ typedef struct _header {
 } header_t;
 #define HEADER_SIZE sizeof(header_t)
 
+typedef struct _list_header {
+    lock_t mutex;
+    size_t size;
+    uintptr_t start_addr;
+    uintptr_t end_addr;
+} list_header_t;
+
+list_header_t buddy_list;
+
 header_t read_header(void* addr) {
     header_t header = *((header_t*)addr); 
     return header;
@@ -68,13 +77,9 @@ static void pmm_init() {
     header.next = 0;
     header.occupied = false;
     header.size = (int)pmsize - HEADER_SIZE; 
-
-    printf("size of header: %d\nsize of mutex: %d\nsize of occupied: %d\nsize of size:%d\nsize of next: %d\n",
-    sizeof(header), sizeof(header.mutex), sizeof(header.occupied), sizeof(header.size), sizeof(header.next));
-    printf("current header size: %d\n",header.size);
+    printf("heap start: %d and end: %d \n", heap.start, heap.end);
     write_header(heap.start, header);
-    header_t header_2 = read_header(heap.start);
-    printf("header2 size: %d\n", header_2.size);
+
 }
 
 MODULE_DEF(pmm) = {
