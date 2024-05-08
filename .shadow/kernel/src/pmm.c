@@ -31,21 +31,14 @@ typedef struct _header {
     uintptr_t next;
     
 } header_t;
-#define HEADER_SIZE 16
+#define HEADER_SIZE sizeof(header_t)
 
-header_t read_header(uintptr_t addr) {
-    header_t header;
-    lock_init(&header.mutex);
-    header.next = 0;
-    header.occupied = false;
-    header.size = 0; 
+header_t read_header(void* addr) {
+    header_t header = *((header_t*)addr); 
     return header;
 }
 void write_header(void* addr, header_t header) {
-    *((lock_t*)addr)            = header.mutex;
-    *((size_t*)(addr + 4))      = header.size;
-    *((bool*)(addr + 8))        = header.occupied;
-    *((uintptr_t*)(addr + 12))  = header.next;
+    *((header_t*)addr) = header;
 }
 
 static void *kalloc(size_t size) {
@@ -80,6 +73,8 @@ static void pmm_init() {
     sizeof(header), sizeof(header.mutex), sizeof(header.occupied), sizeof(header.size), sizeof(header.next));
     printf("current header size: %d\n",header.size);
     write_header(heap.start, header);
+    header_t header_2 = read_header(heap.start);
+    printf("header2 size: %d\n", header_2.size);
 }
 
 MODULE_DEF(pmm) = {
