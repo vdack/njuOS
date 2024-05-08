@@ -136,7 +136,7 @@ static inline void *buddy_alloc(size_t size) {
 static void *kalloc(size_t size) {
     // TODO
     // You can add more .c files to the repo.
-    return NULL;
+    return buddy_alloc(size);
 }
 
 static void kfree(void *ptr) {
