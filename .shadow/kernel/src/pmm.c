@@ -1,5 +1,9 @@
 #include <common.h>
 
+typedef struct _header {
+    
+} header;
+
 static void *kalloc(size_t size) {
     // TODO
     // You can add more .c files to the repo.
