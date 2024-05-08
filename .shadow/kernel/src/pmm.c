@@ -1,5 +1,6 @@
 #include <common.h>
 
+
 #ifndef _MY_LOCK
 #define _MY_LOCK
 #define MY_LOCKED 1
@@ -41,8 +42,10 @@ header_t read_header(uintptr_t addr) {
     return header;
 }
 void write_header(uintptr_t addr, header_t header) {
-    int x = 1;
-    x--;
+    *((lock_t*)addr)            = header.mutex;
+    *((size_t*)(addr + 4))      = header.size;
+    *((bool*)(addr + 8))        = header.occupied;
+    *((uintptr_t*)(addr + 12))  = header.next;
 }
 
 static void *kalloc(size_t size) {
