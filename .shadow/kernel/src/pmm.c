@@ -72,7 +72,7 @@ static void pmm_init() {
     header.occupied = false;
     header.size = 0; 
 
-    printf("size of header: %d\nsize of mutex: %d\nsize of occupied: %d\nsize of size:%d\n",sizeof(header), sizeof(header.mutex), sizeof(header.occupied), sizeof(header.size));
+    printf("size of header: %d\nsize of mutex: %d\nsize of occupied: %d\nsize of size:%d\n size of next: %d\n",sizeof(header), sizeof(header.mutex), sizeof(header.occupied), sizeof(header.size), sizeof(header.next));
 }
 
 MODULE_DEF(pmm) = {
