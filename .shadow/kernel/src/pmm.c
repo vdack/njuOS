@@ -131,7 +131,7 @@ static void pmm_init() {
     );
     
     // other init
-    srand(pmsize >> 3);
+    srand(pmsize >> 4);
     
     //67108864 
 
