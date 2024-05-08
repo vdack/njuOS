@@ -93,17 +93,43 @@ static int small_sum;
 
 //     lock_release(&header->mutex);
 // }
-// static void *buddy_alloc(size_t size) {
-//     header_t* header = read_header((void*) buddy_list.start_addr);
-//     while(1) {
-//         header* next_header = NULL;
-//         lock_acquire(&header->mutex);
-//         if (header->size < size) {
-//             next_header = (header*)header->next;
-//         }
-//         lock_release(&header->mutex);
-//     }
-// }
+static inline void *buddy_alloc(size_t size) {
+    header_t* header = first_buddy_addr;
+    while(1) {
+        header_t* next_header = NULL;
+        
+        lock_acquire(&header->mutex);
+
+        // is occupied or too small
+        if ((header->occupied) || (header->size < size)) {
+            next_header = header->next;
+        } else {
+            int divide_size = (header->size - HEADER_SIZE) / 2;
+            if (divide_size < size) {
+                // find the suitable buddy.
+                header->occupied = true;
+                lock_release(&header->mutex);
+                return header + HEADER_SIZE;
+            }
+
+            // divide current buddy to small ones.
+            header_t* new_header_addr = header + HEADER_SIZE + divide_size;
+            header_t new_header = construct_header(divide_size, header->next);
+            write_header(new_header_addr, new_header);
+            header->next = new_header_addr;
+            header->size = divide_size;
+            next_header = header;
+        }
+        
+        lock_release(&header->mutex);
+        header = next_header;
+        
+        // no other buddy space
+        if (header == NULL) {
+            return NULL;
+        }
+    }
+}
 
 
 
@@ -139,7 +165,7 @@ static void pmm_init() {
     
     buddy_sum = 1;
     uintptr_t left_size = pmsize - BUDDY_SIZE;
-    header_t last_buddy_header = construct_header(BUDDY_SIZE - HEADER_SIZE, NONE_NEXT);
+    header_t last_buddy_header = construct_header(BUDDY_SIZE - HEADER_SIZE, NULL);
     void* last_addr = heap.end - BUDDY_SIZE - HEADER_SIZE;
     write_header(last_addr, last_buddy_header);
 
