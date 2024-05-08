@@ -16,7 +16,7 @@ void lock_acquire(lock_t* lock) {
 }
 void lock_release(lock_t* lock) {
     int rc = atomic_xchg(&lock->flag, MY_UNLOCKED);
-    panic_on(rc == MY_LOCKED, "release before acquire!!!");
+    panic_on(rc == MY_UNLOCKED, "release before acquire!!!");
 }
 bool try_lock_acquire(lock_t* lock) {
     int rc = atomic_xchg(&lock->flag, MY_LOCKED);
