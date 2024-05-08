@@ -44,7 +44,7 @@ typedef struct _header {
     bool occupied;
     size_t size;
     
-    void* next;
+    struct _header* next;
     
 } header_t;
 #define HEADER_SIZE sizeof(header_t)
@@ -152,6 +152,7 @@ static void pmm_init() {
     first_buddy_addr = last_buddy_addr;
     printf("current buddy num: %d and left size: %d\n", buddy_sum, left_size);
     printf("buddy first address: %p\n", (void*)first_buddy_addr + HEADER_SIZE);
+    printf("next buddy pstr: %p\n", (void*)first_buddy_addr->next + HEADER_SIZE);                    
     //
 
 
