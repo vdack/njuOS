@@ -156,7 +156,7 @@ static void pmm_init() {
     first_buddy_addr = last_addr;        
     
     printf("current buddy num: %d and left size: %d\n", buddy_sum, left_size);
-    
+
     // init small 
     
     small_sum = 0;
@@ -177,7 +177,7 @@ static void pmm_init() {
     printf("next buddy pstr: %p\n", (void*)first_buddy_addr->next + HEADER_SIZE);   
     
     printf("small sum: %d, and left size: %d\n", small_sum, left_size);
-    printf("first small pstr: %p\nnext small pstr: %p\n",(void*)first_small_addr + HEADER_SIZE, (void*)first_small_addr->next + HEADER_SIZE);
+    printf("first small pstr: %p\nnext small pstr: %p\n\n",(void*)first_small_addr + HEADER_SIZE, (void*)first_small_addr->next + HEADER_SIZE);
 
 
 }
