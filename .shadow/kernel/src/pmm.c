@@ -130,6 +130,9 @@ static void pmm_init() {
         pmsize >> 20, heap.start, heap.end
     );
     
+    // other init
+    srand(pmsize >> 3);
+    
     //67108864 
 
     //init the buddy segement.
@@ -171,7 +174,8 @@ static void pmm_init() {
     printf("next buddy pstr: %p\n", (void*)first_buddy_addr->next + HEADER_SIZE);   
     
     printf("small sum: %d, and left size: %d\n", small_sum, left_size);
-    printf("first small pstr: %p\nnext small pstr: %p\n\n",(void*)first_small_addr + HEADER_SIZE, (void*)first_small_addr->next + HEADER_SIZE);
+    printf("first small pstr: %p\nnext small pstr: %p\n",(void*)first_small_addr + HEADER_SIZE, (void*)first_small_addr->next + HEADER_SIZE);
+    printf("a random small pstr: %p \n", (void*)first_small_addr + (rand() % small_sum) * SMALL_SIZE + HEADER_SIZE);
 
 
 }
