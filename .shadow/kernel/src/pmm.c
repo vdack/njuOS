@@ -106,7 +106,7 @@ static void pmm_init() {
         header_t buddy_header = construct_header(MB_TO_BYTES(buddy_size_MB), NONE_NEXT);
         intptr_t buddy_h = (intptr_t)heap.end - MB_TO_BYTES(buddy_size_MB) - HEADER_SIZE;
         write_header((void*)buddy_h, buddy_header);
-        printf("buddy first address: %p\n", (void*)buddy_h - HEADER_SIZE);
+        printf("buddy first address: %p\n", (void*)buddy_h + HEADER_SIZE);
     //
 
 
