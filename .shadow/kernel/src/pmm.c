@@ -26,8 +26,9 @@ bool try_lock_acquire(lock_t* lock) {
 typedef struct _header {
     lock_t mutex;
     size_t size;
-    uintptr_t next;
     bool occupied;
+    uintptr_t next;
+    
 } header_t;
 #define HEADER_SIZE 16
 
