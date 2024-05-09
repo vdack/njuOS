@@ -99,6 +99,8 @@ static inline void *buddy_alloc(size_t size) {
     while(1) {
         header_t* next_header = NULL;
         
+        printf("current header %p, size: %d, occupied: %d\n", header, header->size, header->occupied);
+
         printf("%p try acquire lock.\n", header);
         lock_acquire(&header->mutex);
         printf("%p acquired lock.\n", header);
