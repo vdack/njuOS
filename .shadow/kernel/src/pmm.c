@@ -127,7 +127,7 @@ static inline void *buddy_alloc(size_t size) {
             }
 
             // divide current buddy to small ones.
-            header_t* new_header_addr = header + HEADER_SIZE + divide_size;
+            header_t* new_header_addr = (header_t*)((intptr_t)header + HEADER_SIZE + divide_size);
             header_t new_header = construct_header(divide_size, header->next);
             
             // write_header(new_header_addr, new_header);
