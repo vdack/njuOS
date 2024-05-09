@@ -99,7 +99,7 @@ static inline void *buddy_alloc(size_t size) {
     while(1) {
         header_t* next_header = NULL;
         
-        printf("current header %p, size: %d, occupied: %d next: %p\n", header, header->size, header->occupied, header->next);
+        // printf("current header %p, size: %d, occupied: %d next: %p\n", header, header->size, header->occupied, header->next);
 
         // printf("%p try acquire lock.\n", header);
         lock_acquire(&header->mutex);
@@ -230,6 +230,8 @@ static void pmm_init() {
 
     printf("i want get a 8 MB size, and get %p \n", kalloc(MB_TO_BYTES(8)));
     printf("i want get a 16 kb size, and get %p \n", kalloc(KB_TO_BYTES(16)));
+
+    printf("\n");
 
 }
 
