@@ -220,7 +220,7 @@ static void pmm_init() {
     //init the buddy segement.
     
     buddy_sum = 1;
-    uintptr_t left_size = (uintptr_t)pmsize - BUDDY_SIZE;
+    uintptr_t left_size = virtual_end - (uintptr_t)heap.start - BUDDY_SIZE;
     header_t last_buddy_header = construct_header(BUDDY_SIZE - HEADER_SIZE, NULL);
     void* last_addr = (void*)(virtual_end - BUDDY_SIZE - HEADER_SIZE);
     write_header(last_addr, last_buddy_header);
