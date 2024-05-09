@@ -163,6 +163,7 @@ static inline void* small_alloc() {
     while (((header_t*)target_addr)->occupied) {
         target_addr = (void*)(((header_t*)target_addr)->next);
     }
+    ((header_t*)target_addr)->occupied = true;
     return (void*)((uintptr_t)target_addr + HEADER_SIZE);
 } 
 
