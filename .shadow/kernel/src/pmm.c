@@ -35,6 +35,7 @@ inline static int get_max_in(int max) {
 }
 #define MB_TO_BYTES(x) (x << 20)
 #define BYTES_TO_MB(x) (x >> 20)
+#define KB_TO_BYTES(x) (x << 10)
 
 
 
@@ -107,7 +108,7 @@ static inline void *buddy_alloc(size_t size) {
             int divide_size = (header->size - HEADER_SIZE) / 2;
             if (divide_size < size) {
                 // find the suitable buddy.
-                printf("Find the suitable buddy!\n");
+                // printf("Find the suitable buddy!\n");
                 header->occupied = true;
                 lock_release(&header->mutex);
                 return header + HEADER_SIZE;
@@ -121,7 +122,7 @@ static inline void *buddy_alloc(size_t size) {
             header->size = divide_size;
             next_header = header;
         }
-        printf("continue search...\n");
+        // printf("continue search...\n");
         lock_release(&header->mutex);
         header = next_header;
         
@@ -206,6 +207,7 @@ static void pmm_init() {
     printf("a random small pstr: %p \n", (void*)first_small_addr + (rand() % small_sum) * SMALL_SIZE + HEADER_SIZE);
 
     printf("i want get a 8 MB size, and get %p \n", kalloc(MB_TO_BYTES(8)));
+    printf("i want get a 16 kb size, and get %p \n", kalloc(KB_TO_BYTES(16)));
 
 }
 
