@@ -123,7 +123,7 @@ static inline void *buddy_alloc(size_t size) {
                 // printf("%p try release lock.\n", header);
                 lock_release(&header->mutex);
                 // printf("%p released lock.\n", header);
-                return header + HEADER_SIZE;
+                return (void*)((uintptr_t)header + HEADER_SIZE);
             }
 
             // divide current buddy to small ones.
