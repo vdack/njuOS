@@ -216,13 +216,13 @@ static void pmm_init() {
     
     // other init
     srand(RAND_SEED);
-
+    uintptr_t virtual_end = (uintptr_t)heap.end & (~(BUDDY_SIZE - 1));
     //init the buddy segement.
     
     buddy_sum = 1;
     uintptr_t left_size = (uintptr_t)pmsize - BUDDY_SIZE;
     header_t last_buddy_header = construct_header(BUDDY_SIZE - HEADER_SIZE, NULL);
-    void* last_addr = (void*)((uintptr_t)heap.end - BUDDY_SIZE - HEADER_SIZE);
+    void* last_addr = (void*)(virtual_end - BUDDY_SIZE - HEADER_SIZE);
     write_header(last_addr, last_buddy_header);
 
     while (left_size >= (2 * BUDDY_SIZE)) {
@@ -252,25 +252,25 @@ static void pmm_init() {
 
     
     
-    // printf("buddy first address: %p\n", (void*)first_buddy_addr + HEADER_SIZE);
-    // printf("next buddy pstr: %p\n", (void*)first_buddy_addr->next + HEADER_SIZE);   
-    // printf("first buddy size: %d\n", first_buddy_addr->size);
+    printf("buddy first address: %p\n", (void*)first_buddy_addr + HEADER_SIZE);
+    printf("next buddy pstr: %p\n", (void*)first_buddy_addr->next + HEADER_SIZE);   
+    printf("first buddy size: %d\n", first_buddy_addr->size);
 
-    // printf("small sum: %d, and left size: %d\n", small_sum, left_size);
-    // printf("first small pstr: %p\nnext small pstr: %p\n",(void*)first_small_addr + HEADER_SIZE, (void*)first_small_addr->next + HEADER_SIZE);
-    // printf("a random small pstr: %p \n", (void*)first_small_addr + (rand() % small_sum) * SMALL_SIZE + HEADER_SIZE);
+    printf("small sum: %d, and left size: %d\n", small_sum, left_size);
+    printf("first small pstr: %p\nnext small pstr: %p\n",(void*)first_small_addr + HEADER_SIZE, (void*)first_small_addr->next + HEADER_SIZE);
+    printf("a random small pstr: %p \n", (void*)first_small_addr + (rand() % small_sum) * SMALL_SIZE + HEADER_SIZE);
 
-    // printf("test start: \n\n");
-    // for (int i = 0; i < 100; i += 1) {
-    //     size_t size = rand() % KB_TO_BYTES(32);
-    //     void* p = kalloc(size);
-    //     if (p == NULL) {
-    //         printf("failed to allocate size of %d\n\n", size);
-    //     }
-    //     if (!if_align(size, p)){
-    //         printf("not algin addr: %p, size %d\n\n", p, size);
-    //     }
-    // }
+    printf("test start: \n\n");
+    for (int i = 0; i < 100; i += 1) {
+        size_t size = rand() % KB_TO_BYTES(32);
+        void* p = kalloc(size);
+        if (p == NULL) {
+            printf("failed to allocate size of %d\n\n", size);
+        }
+        if (!if_align(size, p)){
+            printf("not algin addr: %p, size %d\n\n", p, size);
+        }
+    }
 
 }
 
