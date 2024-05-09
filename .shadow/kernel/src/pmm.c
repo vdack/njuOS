@@ -99,8 +99,9 @@ static inline void *buddy_alloc(size_t size) {
     while(1) {
         header_t* next_header = NULL;
         
+        printf("%p try acquire lock.\n", header);
         lock_acquire(&header->mutex);
-
+        printf("%p acquired lock.\n", header);
         // is occupied or too small
         if ((header->occupied) || (header->size < size)) {
             next_header = header->next;
@@ -110,7 +111,9 @@ static inline void *buddy_alloc(size_t size) {
                 // find the suitable buddy.
                 printf("Find the suitable buddy!\n");
                 header->occupied = true;
+                printf("%p try release lock.\n", header);
                 lock_release(&header->mutex);
+                printf("%p released lock.\n", header);
                 return header + HEADER_SIZE;
             }
 
@@ -123,7 +126,11 @@ static inline void *buddy_alloc(size_t size) {
             next_header = header;
         }
         printf("continue search...\n");
+        
+        printf("%p try release lock.\n", header);
         lock_release(&header->mutex);
+        printf("%p released lock.\n", header);
+
         header = next_header;
         
         // no other buddy space
