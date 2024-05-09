@@ -247,6 +247,7 @@ static void pmm_init() {
     printf("first small pstr: %p\nnext small pstr: %p\n",(void*)first_small_addr + HEADER_SIZE, (void*)first_small_addr->next + HEADER_SIZE);
     printf("a random small pstr: %p \n", (void*)first_small_addr + (rand() % small_sum) * SMALL_SIZE + HEADER_SIZE);
 
+    printf("test start: \n\n");
     for (int i = 0; i < 1000; i += 1) {
         size_t size = rand() % 8192;
         void* p = kalloc(size);
