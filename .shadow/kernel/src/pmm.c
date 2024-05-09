@@ -106,13 +106,13 @@ static inline void *buddy_alloc(size_t size) {
         // printf("%p acquired lock.\n", header);
         // is occupied or too small
         if ((header->occupied)) {
-            printf("%p is occupied.\n", header);
+            // printf("%p is occupied.\n", header);
             next_header = header->next;
-            printf("next header %p, size: %d, occupied: %d next: %p\n", header->next, header->next->size, header->next->occupied, header->next->next);
+            // printf("next header %p, size: %d, occupied: %d next: %p\n", header->next, header->next->size, header->next->occupied, header->next->next);
         } else if ((header->size < size)) {
-            printf("%p is too small.\n", header);
+            // printf("%p is too small.\n", header);
             next_header = header->next;
-            printf("next header %p, size: %d, occupied: %d next: %p\n", header->next, header->next->size, header->next->occupied, header->next->next);
+            // printf("next header %p, size: %d, occupied: %d next: %p\n", header->next, header->next->size, header->next->occupied, header->next->next);
 
         } else {
             int divide_size = (header->size - HEADER_SIZE) / 2;
