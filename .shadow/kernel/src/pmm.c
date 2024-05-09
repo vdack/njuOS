@@ -188,19 +188,19 @@ static void pmm_init() {
     //init the buddy segement.
     
     buddy_sum = 1;
-    uintptr_t left_size = pmsize - BUDDY_SIZE;
+    uintptr_t left_size = (uintptr_t)pmsize - BUDDY_SIZE;
     header_t last_buddy_header = construct_header(BUDDY_SIZE - HEADER_SIZE, NULL);
-    void* last_addr = heap.end - BUDDY_SIZE - HEADER_SIZE;
+    void* last_addr = (void*)((uintptr_t)heap.end - BUDDY_SIZE - HEADER_SIZE);
     write_header(last_addr, last_buddy_header);
 
     while (left_size >= (2 * BUDDY_SIZE)) {
         buddy_sum += 1;
         header_t buddy_header = construct_header(BUDDY_SIZE - HEADER_SIZE, last_addr);
-        last_addr = last_addr - BUDDY_SIZE;
+        last_addr = (void*)((uintptr_t)last_addr - BUDDY_SIZE);
         write_header(last_addr, buddy_header);
         left_size -= BUDDY_SIZE;
     }
-    first_buddy_addr = last_addr;        
+    first_buddy_addr = (header_t*)last_addr;        
     
     printf("current buddy num: %d and left size: %d\n", buddy_sum, left_size);
 
@@ -210,13 +210,13 @@ static void pmm_init() {
     while (left_size > SMALL_SIZE) {
         small_sum += 1;
         header_t small_header = construct_header(SMALL_SIZE - HEADER_SIZE, last_addr);
-        last_addr = last_addr - SMALL_SIZE;
+        last_addr = (void*)((uintptr_t)last_addr - SMALL_SIZE);
         write_header(last_addr, small_header);
         left_size -= SMALL_SIZE;
     }
     header_t small_end_header = construct_header(SMALL_SIZE - HEADER_SIZE, last_addr);
     write_header((first_buddy_addr - SMALL_SIZE), small_end_header);
-    first_small_addr = last_addr;
+    first_small_addr = (header_t*)last_addr;
 
     
     
