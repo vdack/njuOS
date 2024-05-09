@@ -248,8 +248,8 @@ static void pmm_init() {
     printf("a random small pstr: %p \n", (void*)first_small_addr + (rand() % small_sum) * SMALL_SIZE + HEADER_SIZE);
 
     printf("test start: \n\n");
-    for (int i = 0; i < 1000; i += 1) {
-        size_t size = rand() % 8192;
+    for (int i = 0; i < 10000; i += 1) {
+        size_t size = rand() % MB_TO_BYTES(2);
         void* p = kalloc(size);
         if (!if_align(size, p)){
             printf("not algin addr: %p, size %d\n\n", p, size);
