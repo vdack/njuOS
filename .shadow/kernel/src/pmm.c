@@ -39,7 +39,7 @@ bool if_align(size_t size, void* paddr){
 #define MB_TO_BYTES(x) (x << 20)
 #define BYTES_TO_MB(x) (x >> 20)
 #define KB_TO_BYTES(x) (x << 10)
-
+#define RAND_SEED 12312314
 
 
 // header def
@@ -200,7 +200,7 @@ static void pmm_init() {
     );
     
     // other init
-    srand(pmsize >> 4);
+    srand(RAND_SEED);
     
     //67108864 
 
