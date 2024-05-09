@@ -25,13 +25,16 @@ bool try_lock_acquire(lock_t* lock) {
 #endif
 
 // tools funtion and macro 
-inline static int get_max_in(int max) {
+inline static int get_max(int max) {
     int t = 1;
     while(t < max) {
         t = t << 1;
     }
-    t = t >> 1;
+    // t = t >> 1;
     return t;
+}
+bool if_align(size_t size, void* paddr){
+    return ((uintptr_t)paddr % get_max(size)) == 0;
 }
 #define MB_TO_BYTES(x) (x << 20)
 #define BYTES_TO_MB(x) (x >> 20)
@@ -244,7 +247,9 @@ static void pmm_init() {
     printf("first small pstr: %p\nnext small pstr: %p\n",(void*)first_small_addr + HEADER_SIZE, (void*)first_small_addr->next + HEADER_SIZE);
     printf("a random small pstr: %p \n", (void*)first_small_addr + (rand() % small_sum) * SMALL_SIZE + HEADER_SIZE);
 
-    printf("i want a 8 MB space, and get %p \n", kalloc(MB_TO_BYTES(8)));
+    void* pp1 = kalloc(MB_TO_BYTES(8));
+
+    printf("i want a 8 MB space, and get %p and if align: %d\n", pp1, if_align(MB_TO_BYTES(8), pp1));
     printf("i want a 16 kb space, and get %p \n", kalloc(KB_TO_BYTES(16)));
     void* p1 = kalloc(17);
     printf("i want a 17 bytes space, and get %p, mod 32: %d\n", p1, (uintptr_t)p1 % 32);
