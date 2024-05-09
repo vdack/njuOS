@@ -56,10 +56,7 @@ inline static header_t* read_header(void* addr) {
     return header;
 }
 inline static void write_header(void* addr, header_t header) {
-    ((header_t*)addr)->mutex = header.mutex;
-    ((header_t*)addr)->next = header.next;
-    ((header_t*)addr)->size = header.size;
-    ((header_t*)addr)->occupied = header.occupied;
+    *((header_t*)addr) = header;
 }
 inline static header_t construct_header(size_t size, header_t* next) {
     header_t header;
@@ -103,7 +100,7 @@ static inline void *buddy_alloc(size_t size) {
         header_t* next_header = NULL;
         
         printf("current header %p, size: %d, occupied: %d next: %p\n", header, header->size, header->occupied, header->next);
-    
+
         // printf("%p try acquire lock.\n", header);
         lock_acquire(&header->mutex);
         // printf("%p acquired lock.\n", header);
