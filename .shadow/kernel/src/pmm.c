@@ -181,6 +181,7 @@ static void *kalloc(size_t size) {
 static void kfree(void *ptr) {
     // TODO
     // You can add more .c files to the repo.
+
 }
 
 
@@ -246,15 +247,15 @@ static void pmm_init() {
     printf("i want a 8 MB space, and get %p \n", kalloc(MB_TO_BYTES(8)));
     printf("i want a 16 kb space, and get %p \n", kalloc(KB_TO_BYTES(16)));
     void* p1 = kalloc(17);
-    printf("i want a 17 bytes space, and get %p, mod 32: %d\n", p1, (int)p1 % 32);
+    printf("i want a 17 bytes space, and get %p, mod 32: %d\n", p1, (uintptr_t)p1 % 32);
     void* p2 = kalloc(8);
-    printf("i want a 8 bytes space, and get %p, mod 8: %d\n", p2, (int)p2 % 8);
+    printf("i want a 8 bytes space, and get %p, mod 8: %d\n", p2, (uintptr_t)p2 % 8);
     void* p3 = kalloc(57);
-    printf("i want a 57 bytes space, and get %p, mod 64: %d\n", p3, (int)p3 % 64);
+    printf("i want a 57 bytes space, and get %p, mod 64: %d\n", p3, (uintptr_t)p3 % 64);
     void* p4 = kalloc(1000);
-    printf("i want a 1000 bytes space, and get %p, mod 1024: %d\n", p4, (int)p4 % 1024);
+    printf("i want a 1000 bytes space, and get %p, mod 1024: %d\n", p4, (uintptr_t)p4 % 1024);
     p1 = kalloc(14);
-    printf("i want a 14 bytes space, and get %p, mod 16: %d\n", p1, (int)p1 % 16);
+    printf("i want a 14 bytes space, and get %p, mod 16: %d\n", p1, (uintptr_t)p1 % 16);
     printf("\n");
 
 }
