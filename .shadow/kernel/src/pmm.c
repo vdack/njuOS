@@ -58,7 +58,7 @@ inline static header_t* read_header(void* addr) {
 inline static void write_header(void* addr, header_t header) {
     *((header_t*)addr) = header;
 }
-static header_t construct_header(size_t size, header_t* next) {
+ header_t construct_header(size_t size, header_t* next) {
     header_t header;
     header.occupied = false;
     header.size = size;
