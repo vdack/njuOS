@@ -56,7 +56,10 @@ inline static header_t* read_header(void* addr) {
     return header;
 }
 inline static void write_header(void* addr, header_t header) {
-    *((header_t*)addr) = header;
+    ((header_t*)addr)->mutex = header.mutex;
+    ((header_t*)addr)->next = header.next;
+    ((header_t*)addr)->size = header.size;
+    ((header_t*)addr)->occupied = header.occupied;
 }
 inline static header_t construct_header(size_t size, header_t* next) {
     header_t header;
@@ -100,10 +103,10 @@ static inline void *buddy_alloc(size_t size) {
         header_t* next_header = NULL;
         
         printf("current header %p, size: %d, occupied: %d next: %p\n", header, header->size, header->occupied, header->next);
-
-        printf("%p try acquire lock.\n", header);
+    
+        // printf("%p try acquire lock.\n", header);
         lock_acquire(&header->mutex);
-        printf("%p acquired lock.\n", header);
+        // printf("%p acquired lock.\n", header);
         // is occupied or too small
         if ((header->occupied)) {
             printf("%p is occupied.\n", header);
@@ -117,9 +120,9 @@ static inline void *buddy_alloc(size_t size) {
                 // find the suitable buddy.
                 printf("Find the suitable buddy!\n");
                 header->occupied = true;
-                printf("%p try release lock.\n", header);
+                // printf("%p try release lock.\n", header);
                 lock_release(&header->mutex);
-                printf("%p released lock.\n", header);
+                // printf("%p released lock.\n", header);
                 return header + HEADER_SIZE;
             }
 
@@ -133,11 +136,11 @@ static inline void *buddy_alloc(size_t size) {
             header->size = divide_size;
             next_header = header;
         }
-        printf("continue search...\n");
+        // printf("continue search...\n");
         
-        printf("%p try release lock.\n", header);
+        // printf("%p try release lock.\n", header);
         lock_release(&header->mutex);
-        printf("%p released lock.\n", header);
+        // printf("%p released lock.\n", header);
 
         header = next_header;
         
