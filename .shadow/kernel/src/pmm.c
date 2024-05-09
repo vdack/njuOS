@@ -127,7 +127,8 @@ static inline void *buddy_alloc(size_t size) {
             header_t* new_header_addr = header + HEADER_SIZE + divide_size;
             header_t new_header = construct_header(divide_size, header->next);
             
-            write_header(new_header_addr, new_header);
+            // write_header(new_header_addr, new_header);
+            *(new_header_addr) = new_header;
             printf("new header %p, size: %d, occupied: %d next: %p\n", new_header_addr, new_header_addr->size, new_header_addr->occupied, new_header_addr->next);
             header->next = new_header_addr;
             header->size = divide_size;
