@@ -16,7 +16,7 @@ void lock_acquire(lock_t* lock) {
 }
 void lock_release(lock_t* lock) {
     int rc = atomic_xchg(&lock->flag, MY_UNLOCKED);
-    panic_on(rc == MY_UNLOCKED, "release before acquire!!!");
+    panic_on(rc == MY_UNLOCKED, "failed! release before acquire!!!\n");
 }
 bool try_lock_acquire(lock_t* lock) {
     int rc = atomic_xchg(&lock->flag, MY_LOCKED);
@@ -34,7 +34,7 @@ inline static int get_max(int max) {
     return t;
 }
 bool if_align(size_t size, void* paddr){
-    return ((uintptr_t)paddr % get_max(size)) == 0;
+    return (((uintptr_t)paddr & (get_max(size) - 1))) == 0;
 }
 #define MB_TO_BYTES(x) (x << 20)
 #define BYTES_TO_MB(x) (x >> 20)
@@ -158,6 +158,11 @@ static inline void *buddy_alloc(size_t size) {
     }
 }
 
+static inline void buddy_merge(header_t* header) {
+    panic_on(header->occupied, "failed! merge an unfreed space!!!\n");
+    //searh for buddy and test if merge.
+}
+
 // small space
 
 static inline void* small_alloc() {
@@ -189,7 +194,10 @@ static void kfree(void *ptr) {
         h_addr->occupied = false;
 
     } else {
-        // free large .
+        // free buddy. 
+        header_t* h_addr = (header_t*)((intptr_t)ptr - HEADER_SIZE);
+        h_addr->occupied = false;
+        buddy_merge(h_addr);
     }
 
 }
@@ -208,8 +216,6 @@ static void pmm_init() {
     
     // other init
     srand(RAND_SEED);
-    
-    //67108864 
 
     //init the buddy segement.
     
