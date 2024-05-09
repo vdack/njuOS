@@ -190,7 +190,7 @@ static void pmm_init() {
     buddy_sum = 1;
     uintptr_t left_size = pmsize - BUDDY_SIZE;
     header_t last_buddy_header = construct_header(BUDDY_SIZE - HEADER_SIZE, NULL);
-    void* last_addr = heap.end - BUDDY_SIZE;
+    void* last_addr = heap.end - BUDDY_SIZE - HEADER_SIZE;
     write_header(last_addr, last_buddy_header);
 
     while (left_size >= (2 * BUDDY_SIZE)) {
