@@ -232,6 +232,12 @@ static void pmm_init() {
     printf("i want a 16 kb space, and get %p \n", kalloc(KB_TO_BYTES(16)));
     void* p1 = kalloc(17);
     printf("i want a 17 bytes space, and get %p, mod 32: %d", p1, (int)p1 % 32);
+    void* p2 = kalloc(8);
+    printf("i want a 8 bytes space, and get %p, mod 8: %d", p2, (int)p2 % 8);
+    void* p3 = kalloc(57);
+    printf("i want a 57 bytes space, and get %p, mod 64: %d", p3, (int)p3 % 64);
+    void* p4 = kalloc(1000);
+    printf("i want a 1000 bytes space, and get %p, mod 1024: %d", p4, (int)p4 % 1024);
     printf("\n");
 
 }
