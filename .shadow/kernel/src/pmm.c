@@ -174,16 +174,23 @@ static inline void* small_alloc() {
 static void *kalloc(size_t size) {
     // TODO
     // You can add more .c files to the repo.
-    if (size > 128) {
-        return buddy_alloc(size);
+    if (size <= 129) {
+        return small_alloc();
     }
-    return small_alloc();
+    return buddy_alloc(size);
     
 }
 
 static void kfree(void *ptr) {
     // TODO
     // You can add more .c files to the repo.
+    if ((intptr_t)ptr < (intptr_t)first_buddy_addr) {
+        header_t* h_addr = (header_t*)((intptr_t)ptr - HEADER_SIZE);
+        h_addr->occupied = false;
+
+    } else {
+        // free large .
+    }
 
 }
 
