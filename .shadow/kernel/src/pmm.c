@@ -235,7 +235,7 @@ static void pmm_init() {
     first_buddy_addr = (header_t*)last_addr;        
     
     printf("current buddy num: %d and left size: %d\n", buddy_sum, left_size);
-
+    printf("current last addr: %p \n", last_addr);
     // init small 
     
     small_sum = 0;
@@ -246,7 +246,7 @@ static void pmm_init() {
         write_header(last_addr, small_header);
         left_size -= SMALL_SIZE;
     }
-    printf("after small \n");
+    // printf("after small \n");
     header_t small_end_header = construct_header(SMALL_SIZE - HEADER_SIZE, last_addr);
     write_header((first_buddy_addr - SMALL_SIZE), small_end_header);
     first_small_addr = (header_t*)last_addr;
