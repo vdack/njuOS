@@ -136,6 +136,7 @@ static inline void *buddy_alloc(size_t size) {
             header->next = new_header_addr;
             header->size = divide_size;
             next_header = header;
+            printf("next header %p, size: %d, occupied: %d next: %p\n", header->next, header->next->size, header->next->occupied, header->next->next);
         }
         // printf("continue search...\n");
         
