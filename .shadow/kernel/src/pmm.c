@@ -99,7 +99,7 @@ static inline void *buddy_alloc(size_t size) {
     while(1) {
         header_t* next_header = NULL;
         
-        printf("current header %p, size: %d, occupied: %d\n", header, header->size, header->occupied);
+        printf("current header %p, size: %d, occupied: %d next: %p\n", header, header->size, header->occupied, header->next);
 
         printf("%p try acquire lock.\n", header);
         lock_acquire(&header->mutex);
@@ -126,7 +126,7 @@ static inline void *buddy_alloc(size_t size) {
             // divide current buddy to small ones.
             header_t* new_header_addr = header + HEADER_SIZE + divide_size;
             header_t new_header = construct_header(divide_size, header->next);
-            printf("new header %p, size: %d, occupied: %d\n", new_header, new_header.size, new_header.occupied);
+            printf("new header %p, size: %d, occupied: %d\n", &new_header, new_header.size, new_header.occupied);
             write_header(new_header_addr, new_header);
             header->next = new_header_addr;
             header->size = divide_size;
