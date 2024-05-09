@@ -155,12 +155,26 @@ static inline void *buddy_alloc(size_t size) {
     }
 }
 
+// small space
+
+static inline void* small_alloc() {
+    int offset = rand() % small_sum;
+    void* target_addr = (void*)((uintptr_t)first_small_addr + SMALL_SIZE * offset);
+    while (((header_t*)target_addr)->occupied) {
+        target_addr = (void*)(((header_t*)target_addr)->next);
+    }
+    return (void*)((uintptr_t)target_addr + HEADER_SIZE);
+} 
 
 
 static void *kalloc(size_t size) {
     // TODO
     // You can add more .c files to the repo.
-    return buddy_alloc(size);
+    if (size > 128) {
+        return buddy_alloc(size);
+    }
+    return small_alloc();
+    
 }
 
 static void kfree(void *ptr) {
