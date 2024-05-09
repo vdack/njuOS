@@ -216,7 +216,7 @@ static void pmm_init() {
     
     // other init
     srand(RAND_SEED);
-    uintptr_t virtual_end = (uintptr_t)heap.end & (~(BUDDY_SIZE - 1));
+    uintptr_t virtual_end = (uintptr_t)heap.end & (~((uintptr_t)BUDDY_SIZE - 1));
     //init the buddy segement.
     
     buddy_sum = 1;
