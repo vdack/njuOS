@@ -103,8 +103,11 @@ static inline void *buddy_alloc(size_t size) {
         lock_acquire(&header->mutex);
         printf("%p acquired lock.\n", header);
         // is occupied or too small
-        if ((header->occupied) || (header->size < size)) {
-            printf("%p is occupied or too small.\n", header);
+        if ((header->occupied)) {
+            printf("%p is occupied.\n", header);
+            next_header = header->next;
+        } else if ((header->size < size)) {
+            printf("%p is too small.\n", header);
             next_header = header->next;
         } else {
             int divide_size = (header->size - HEADER_SIZE) / 2;
