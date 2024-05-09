@@ -250,7 +250,9 @@ static void pmm_init() {
     void* pp1 = kalloc(MB_TO_BYTES(8));
 
     printf("i want a 8 MB space, and get %p and if align: %d\n", pp1, if_align(MB_TO_BYTES(8), pp1));
-    printf("i want a 16 kb space, and get %p \n", kalloc(KB_TO_BYTES(16)));
+    // printf("i want a 16 kb space, and get %p \n", kalloc(KB_TO_BYTES(16)));
+    pp1 = kalloc(123456);
+    printf("%d bytes space and addr: %p if align: %d\n",123456, pp1, if_align(123456, pp1));
     void* p1 = kalloc(17);
     printf("i want a 17 bytes space, and get %p, mod 32: %d\n", p1, (uintptr_t)p1 % 32);
     void* p2 = kalloc(8);
