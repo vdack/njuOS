@@ -58,7 +58,7 @@ inline static header_t* read_header(void* addr) {
 inline static void write_header(void* addr, header_t header) {
     *((header_t*)addr) = header;
 }
- header_t construct_header(size_t size, header_t* next) {
+inline static header_t construct_header(size_t size, header_t* next) {
     header_t header;
     header.occupied = false;
     header.size = size;
@@ -126,8 +126,9 @@ static inline void *buddy_alloc(size_t size) {
             // divide current buddy to small ones.
             header_t* new_header_addr = header + HEADER_SIZE + divide_size;
             header_t new_header = construct_header(divide_size, header->next);
-            printf("new header %p, size: %d, occupied: %d\n", &new_header, new_header.size, new_header.occupied);
+            
             write_header(new_header_addr, new_header);
+            printf("new header %p, size: %d, occupied: %d next: %p\n", new_header_addr, new_header_addr->size, new_header_addr->occupied, new_header_addr->next);
             header->next = new_header_addr;
             header->size = divide_size;
             next_header = header;
