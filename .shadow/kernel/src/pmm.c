@@ -39,7 +39,7 @@ bool if_align(size_t size, void* paddr){
 #define MB_TO_BYTES(x) (x << 20)
 #define BYTES_TO_MB(x) (x >> 20)
 #define KB_TO_BYTES(x) (x << 10)
-#define RAND_SEED 12312314
+#define RAND_SEED 1231238888
 
 
 // header def
@@ -249,8 +249,11 @@ static void pmm_init() {
 
     printf("test start: \n\n");
     for (int i = 0; i < 10000; i += 1) {
-        size_t size = rand() % MB_TO_BYTES(2);
+        size_t size = rand() % MB_TO_BYTES(2) + MB_TO_BYTES(1);
         void* p = kalloc(size);
+        if (p == NULL) {
+            printf("failed to allocate size of %d\n\n", size);
+        }
         if (!if_align(size, p)){
             printf("not algin addr: %p, size %d\n\n", p, size);
         }
