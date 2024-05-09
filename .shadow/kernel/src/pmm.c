@@ -108,7 +108,7 @@ static inline void *buddy_alloc(size_t size) {
             int divide_size = (header->size - HEADER_SIZE) / 2;
             if (divide_size < size) {
                 // find the suitable buddy.
-                // printf("Find the suitable buddy!\n");
+                printf("Find the suitable buddy!\n");
                 header->occupied = true;
                 lock_release(&header->mutex);
                 return header + HEADER_SIZE;
@@ -122,7 +122,7 @@ static inline void *buddy_alloc(size_t size) {
             header->size = divide_size;
             next_header = header;
         }
-        // printf("continue search...\n");
+        printf("continue search...\n");
         lock_release(&header->mutex);
         header = next_header;
         
