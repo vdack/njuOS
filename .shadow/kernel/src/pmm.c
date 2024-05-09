@@ -247,23 +247,13 @@ static void pmm_init() {
     printf("first small pstr: %p\nnext small pstr: %p\n",(void*)first_small_addr + HEADER_SIZE, (void*)first_small_addr->next + HEADER_SIZE);
     printf("a random small pstr: %p \n", (void*)first_small_addr + (rand() % small_sum) * SMALL_SIZE + HEADER_SIZE);
 
-    void* pp1 = kalloc(MB_TO_BYTES(8));
-
-    printf("i want a 8 MB space, and get %p and if align: %d\n", pp1, if_align(MB_TO_BYTES(8), pp1));
-    // printf("i want a 16 kb space, and get %p \n", kalloc(KB_TO_BYTES(16)));
-    pp1 = kalloc(123456);
-    printf("%d bytes space and addr: %p if align: %d\n",123456, pp1, if_align(123456, pp1));
-    void* p1 = kalloc(17);
-    printf("i want a 17 bytes space, and get %p, mod 32: %d\n", p1, (uintptr_t)p1 % 32);
-    void* p2 = kalloc(8);
-    printf("i want a 8 bytes space, and get %p, mod 8: %d\n", p2, (uintptr_t)p2 % 8);
-    void* p3 = kalloc(57);
-    printf("i want a 57 bytes space, and get %p, mod 64: %d\n", p3, (uintptr_t)p3 % 64);
-    void* p4 = kalloc(1000);
-    printf("i want a 1000 bytes space, and get %p, mod 1024: %d\n", p4, (uintptr_t)p4 % 1024);
-    p1 = kalloc(14);
-    printf("i want a 14 bytes space, and get %p, mod 16: %d\n", p1, (uintptr_t)p1 % 16);
-    printf("\n");
+    for (int i = 0; i < 1000; i += 1) {
+        size_t size = rand() % 8192;
+        void* p = kalloc(size);
+        if (!if_align(size, p)){
+            printf("not algin addr: %p, size %d\n\n", p, size);
+        }
+    }
 
 }
 
