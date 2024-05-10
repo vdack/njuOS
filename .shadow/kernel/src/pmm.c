@@ -131,7 +131,6 @@ static inline void buddy_free(header_t* header) {
             //find a buddy to merge.
             printf("find a buddy to merge.\n");
             if ((uintptr_t)header < (uintptr_t)buddy_addr) {
-                lock_release(&header->mutex);
                 header_t* temp = header;
                 header = buddy_addr;
                 buddy_addr = temp;
