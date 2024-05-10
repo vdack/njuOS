@@ -121,6 +121,9 @@ static inline void buddy_free(header_t* header) {
     header->occupied = false;
 
     header_t* buddy_addr = (header_t*)((((uintptr_t)header + HEADER_SIZE) ^ ((uintptr_t)(header->size) + HEADER_SIZE)) - HEADER_SIZE); 
+    
+    printf("header: %p, size: %d\nbuddy: %p, size: %d\n",header, header->size, buddy_addr, buddy_addr->size);
+
     lock_acquire(&buddy_addr->mutex);
     
     if ( (buddy_addr->size == header->size) && (!buddy_addr->occupied) ) {
@@ -234,6 +237,10 @@ static void pmm_init() {
     header_t small_end_header = construct_header(SMALL_SIZE - HEADER_SIZE, last_addr);
     write_header((first_buddy_addr - SMALL_SIZE), small_end_header);
     first_small_addr = (header_t*)last_addr;
+
+    void* p1 = kalloc(KB_TO_BYTES(13));
+    printf("p1: %p\n", p1);
+    kfree(p1);
 
 }
 
