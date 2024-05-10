@@ -1,5 +1,6 @@
 #include <common.h>
 
+#define BUDDY_RANDOM
 // lock part.
 #ifndef _MY_LOCK
 #define _MY_LOCK
@@ -70,7 +71,14 @@ static int small_sum;
 // helper function 
 
 static inline void *buddy_alloc(size_t size) {
+
+#ifdef BUDDY_RANDOM
+    int offset = rand() % buddy_sum;
+    header_t* header = (header_t*)((uintptr_t)first_buddy_addr + offset * BUDDY_SIZE);
+#else
     header_t* header = first_buddy_addr;
+#endif
+    
     while(1) {
         header_t* next_header = NULL;
         
@@ -187,10 +195,10 @@ static void kfree(void *ptr) {
     } else {
         // free buddy. 
         header_t* h_addr = (header_t*)((intptr_t)ptr - HEADER_SIZE);
-        // lock_acquire(&h_addr->mutex);
-        // h_addr->occupied = false;
-        // lock_release(&h_addr->mutex);
-        buddy_free(h_addr);
+        lock_acquire(&h_addr->mutex);
+        h_addr->occupied = false;
+        lock_release(&h_addr->mutex);
+        // buddy_free(h_addr);
     }
 
 }
