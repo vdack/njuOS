@@ -124,7 +124,7 @@ static inline void buddy_free(header_t* header) {
                 buddy_addr = temp;
             } 
             header->size = header->size + HEADER_SIZE + header->size;
-            header->next = (header_t*)((uintptr_t)header + HEADER_SIZE + header->size);
+            header->next = buddy_addr->next;
             lock_release(&buddy_addr->mutex);
         } else {
             lock_release(&buddy_addr->mutex);
