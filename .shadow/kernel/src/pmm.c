@@ -115,42 +115,28 @@ static inline void *buddy_alloc(size_t size) {
 }
 
 static inline void buddy_free(header_t* header) {
-    //TODO NOW JUST MERGE ONCE!!!
-
     lock_acquire(&header->mutex);
     header->occupied = false;
     while(header->size +HEADER_SIZE < KB_TO_BYTES(8)) {
         header_t* buddy_addr = (header_t*)((((uintptr_t)header + HEADER_SIZE) ^ ((uintptr_t)(header->size) + HEADER_SIZE)) - HEADER_SIZE); 
-    
-        // printf("header: %p, size: %d\nbuddy: %p, size: %d\n",header, header->size, buddy_addr, buddy_addr->size);
-
         bool rc = try_lock_acquire(&buddy_addr->mutex);
-        
         if (!rc) {
             break;
         }
-
         if ( (buddy_addr->size == header->size) && (!buddy_addr->occupied) ) {
             //find a buddy to merge.
-            // printf("find a buddy to merge.\n");
-            if ((uintptr_t)header < (uintptr_t)buddy_addr) {
+            if ((uintptr_t)header > (uintptr_t)buddy_addr) {
                 header_t* temp = header;
                 header = buddy_addr;
                 buddy_addr = temp;
-
             } 
             header->size = header->size + HEADER_SIZE + header->size;
             header->next = (header_t*)((uintptr_t)header + HEADER_SIZE + header->size);
-            // printf("before release.\n");
             lock_release(&buddy_addr->mutex);
-            // printf("after a buddy merged.\n");
-            //
         } else {
-            // printf("can not merge.\n");
             lock_release(&buddy_addr->mutex);
             break;
         }
-        // printf("current header: %p size: %d\n", header, header->size);
     }
 
     lock_release(&header->mutex);
