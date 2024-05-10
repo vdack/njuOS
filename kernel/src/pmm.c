@@ -25,17 +25,7 @@ bool try_lock_acquire(lock_t* lock) {
 #endif
 
 // tools funtion and macro 
-inline static int get_max(int max) {
-    int t = 1;
-    while(t < max) {
-        t = t << 1;
-    }
-    // t = t >> 1;
-    return t;
-}
-bool if_align(size_t size, void* paddr){
-    return (((uintptr_t)paddr & (get_max(size) - 1))) == 0;
-}
+
 #define MB_TO_BYTES(x) (x << 20)
 #define BYTES_TO_MB(x) (x >> 20)
 #define KB_TO_BYTES(x) (x << 10)
@@ -47,7 +37,6 @@ typedef struct _header {
     lock_t mutex;
     bool occupied;
     size_t size;
-    
     struct _header* next;
     
 } header_t;
@@ -70,17 +59,6 @@ inline static header_t construct_header(size_t size, header_t* next) {
     return header;
 }
 
-
-
-// // list def
-// typedef struct _list_header {
-//     lock_t mutex;
-//     size_t size;
-//     uintptr_t start_addr;
-// } list_header_t;
-
-// static list_header_t buddy_list;
-
 #define BUDDY_SIZE (32 << 20)
 #define SMALL_SIZE 256
 static header_t* first_buddy_addr;
@@ -91,41 +69,23 @@ static int small_sum;
 
 // helper function 
 
-// static inline intptr_t buddy_search(size_t size, intptr_t node_h) {
-//     header_t* header = read_header((void*) node_h);
-//     lock_acquire(&header->mutex);
-
-//     lock_release(&header->mutex);
-// }
 static inline void *buddy_alloc(size_t size) {
     header_t* header = first_buddy_addr;
     while(1) {
         header_t* next_header = NULL;
         
-        // printf("current header %p, size: %d, occupied: %d next: %p\n", header, header->size, header->occupied, header->next);
-
-        // printf("%p try acquire lock.\n", header);
         lock_acquire(&header->mutex);
-        // printf("%p acquired lock.\n", header);
         // is occupied or too small
         if ((header->occupied)) {
-            // printf("%p is occupied.\n", header);
             next_header = header->next;
-            // printf("next header %p, size: %d, occupied: %d next: %p\n", header->next, header->next->size, header->next->occupied, header->next->next);
         } else if ((header->size < size)) {
-            // printf("%p is too small.\n", header);
             next_header = header->next;
-            // printf("next header %p, size: %d, occupied: %d next: %p\n", header->next, header->next->size, header->next->occupied, header->next->next);
-
         } else {
             int divide_size = (header->size - HEADER_SIZE) / 2;
             if (divide_size < size) {
                 // find the suitable buddy.
-                // printf("Find the suitable buddy!\n");
                 header->occupied = true;
-                // printf("%p try release lock.\n", header);
                 lock_release(&header->mutex);
-                // printf("%p released lock.\n", header);
                 return (void*)((uintptr_t)header + HEADER_SIZE);
             }
 
@@ -136,21 +96,12 @@ static inline void *buddy_alloc(size_t size) {
             // write_header(new_header_addr, new_header);
             header->next = (header_t*)new_header_addr;
             *(new_header_addr) = new_header;
-            // *(header->next) = new_header;
-            // printf("new header %p, size: %d, occupied: %d next: %p\n", new_header_addr, new_header_addr->size, new_header_addr->occupied, new_header_addr->next);
-            // printf("next header %p, size: %d, occupied: %d next: %p\n", header->next, header->next->size, header->next->occupied, header->next->next);
             header->size = divide_size;
             next_header = header;
             
-        }
-        // printf("continue search...\n");
-        
-        // printf("%p try release lock.\n", header);
+        }        
         lock_release(&header->mutex);
-        // printf("%p released lock.\n", header);
-
         header = next_header;
-        
         // no other buddy space
         if (header == NULL) {
             return NULL;
@@ -183,13 +134,6 @@ static inline void* small_alloc() {
             target_addr = (void*)(((header_t*)target_addr)->next);
         }
     }
-
-
-    // while (((header_t*)target_addr)->occupied) {
-    //     target_addr = (void*)(((header_t*)target_addr)->next);
-    // }
-    // ((header_t*)target_addr)->occupied = true;
-    // return (void*)((uintptr_t)target_addr + HEADER_SIZE);
 } 
 
 
@@ -208,13 +152,17 @@ static void kfree(void *ptr) {
     // You can add more .c files to the repo.
     if ((intptr_t)ptr < (intptr_t)first_buddy_addr) {
         header_t* h_addr = (header_t*)((intptr_t)ptr - HEADER_SIZE);
+        lock_acquire(&h_addr->mutex);
         h_addr->occupied = false;
+        lock_release(&h_addr->mutex);
 
     } else {
         // free buddy. 
         header_t* h_addr = (header_t*)((intptr_t)ptr - HEADER_SIZE);
+        lock_acquire(&h_addr->mutex);
         h_addr->occupied = false;
-        buddy_merge(h_addr);
+        lock_release(&h_addr->mutex);
+        // buddy_merge(h_addr);
     }
 
 }
@@ -250,9 +198,6 @@ static void pmm_init() {
         left_size -= BUDDY_SIZE;
     }
     first_buddy_addr = (header_t*)last_addr;        
-    
-    printf("current buddy num: %d and left size: %d\n", buddy_sum, left_size);
-    printf("current last addr: %p \n", last_addr);
     // init small 
     
     small_sum = 0;
@@ -267,28 +212,6 @@ static void pmm_init() {
     header_t small_end_header = construct_header(SMALL_SIZE - HEADER_SIZE, last_addr);
     write_header((first_buddy_addr - SMALL_SIZE), small_end_header);
     first_small_addr = (header_t*)last_addr;
-
-    
-    
-    // printf("buddy first address: %p\n", (void*)first_buddy_addr + HEADER_SIZE);
-    // printf("next buddy pstr: %p\n", (void*)first_buddy_addr->next + HEADER_SIZE);   
-    // printf("first buddy size: %d\n", first_buddy_addr->size);
-
-    // printf("small sum: %d, and left size: %d\n", small_sum, left_size);
-    // printf("first small pstr: %p\nnext small pstr: %p\n",(void*)first_small_addr + HEADER_SIZE, (void*)first_small_addr->next + HEADER_SIZE);
-    // printf("a random small pstr: %p \n", (void*)first_small_addr + (rand() % small_sum) * SMALL_SIZE + HEADER_SIZE);
-
-    // printf("test start: \n\n");
-    // for (int i = 0; i < 100; i += 1) {
-    //     size_t size = rand() % KB_TO_BYTES(32);
-    //     void* p = kalloc(size);
-    //     if (p == NULL) {
-    //         printf("failed to allocate size of %d\n\n", size);
-    //     }
-    //     if (!if_align(size, p)){
-    //         printf("not algin addr: %p, size %d\n\n", p, size);
-    //     }
-    // }
 
 }
 
