@@ -32,7 +32,6 @@ bool try_lock_acquire(lock_t* lock) {
 #define KB_TO_BYTES(x) (x << 10)
 #define RAND_SEED 1231238888
 
-
 // header def
 typedef struct _header {
     lock_t mutex;
@@ -42,12 +41,7 @@ typedef struct _header {
     
 } header_t;
 #define HEADER_SIZE sizeof(header_t)
-#define NONE_NEXT 0
 
-inline static header_t* read_header(void* addr) {
-    header_t* header = ((header_t*)addr); 
-    return header;
-}
 inline static void write_header(void* addr, header_t header) {
     *((header_t*)addr) = header;
 }
@@ -66,7 +60,6 @@ static header_t* first_buddy_addr;
 static header_t* first_small_addr;
 static int buddy_sum;
 static int small_sum;
-
 
 // helper function 
 static inline void *buddy_alloc(size_t size) {
