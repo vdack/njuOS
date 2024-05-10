@@ -179,9 +179,6 @@ static void kfree(void *ptr) {
     } else {
         // free buddy. 
         header_t* h_addr = (header_t*)((intptr_t)ptr - HEADER_SIZE);
-        // lock_acquire(&h_addr->mutex);
-        // h_addr->occupied = false;
-        // lock_release(&h_addr->mutex);
         buddy_free(h_addr);
     }
 
