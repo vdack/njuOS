@@ -186,10 +186,10 @@ static void kfree(void *ptr) {
     } else {
         // free buddy. 
         header_t* h_addr = (header_t*)((intptr_t)ptr - HEADER_SIZE);
-        lock_acquire(&h_addr->mutex);
-        h_addr->occupied = false;
-        lock_release(&h_addr->mutex);
-        // buddy_free(h_addr);
+        // lock_acquire(&h_addr->mutex);
+        // h_addr->occupied = false;
+        // lock_release(&h_addr->mutex);
+        buddy_free(h_addr);
     }
 
 }
@@ -209,8 +209,8 @@ static void pmm_init() {
     // other init
     srand(RAND_SEED);
     uintptr_t virtual_end = (uintptr_t)heap.end & (~((uintptr_t)BUDDY_SIZE - 1));
-    //init the buddy segement.
     
+    //init the buddy segement.
     buddy_sum = 1;
     uintptr_t left_size = virtual_end - (uintptr_t)heap.start - BUDDY_SIZE;
     header_t last_buddy_header = construct_header(BUDDY_SIZE - HEADER_SIZE, NULL);
@@ -225,8 +225,8 @@ static void pmm_init() {
         left_size -= BUDDY_SIZE;
     }
     first_buddy_addr = (header_t*)last_addr;        
-    // init small 
     
+    // init small 
     small_sum = 0;
     while (left_size > SMALL_SIZE) {
         small_sum += 1;
@@ -235,15 +235,9 @@ static void pmm_init() {
         write_header(last_addr, small_header);
         left_size -= SMALL_SIZE;
     }
-    // printf("after small \n");
     header_t small_end_header = construct_header(SMALL_SIZE - HEADER_SIZE, last_addr);
     write_header((first_buddy_addr - SMALL_SIZE), small_end_header);
     first_small_addr = (header_t*)last_addr;
-
-    // void* p1 = kalloc(KB_TO_BYTES(2));
-    // printf("p1: %p\n", p1);
-    // kfree(p1);
-
 }
 
 MODULE_DEF(pmm) = {
