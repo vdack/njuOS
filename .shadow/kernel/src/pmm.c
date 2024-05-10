@@ -145,6 +145,7 @@ static inline void buddy_free(header_t* header) {
             //
         } else {
             // printf("can not merge.\n");
+            lock_release(&buddy_addr->mutex);
             break;
         }
         // printf("current header: %p size: %d\n", header, header->size);
