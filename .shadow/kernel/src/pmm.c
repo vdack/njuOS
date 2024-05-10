@@ -119,8 +119,9 @@ static inline void buddy_free(header_t* header) {
 
     lock_acquire(&header->mutex);
     header->occupied = false;
-
-    while(header->size + HEADER_SIZE < KB_TO_BYTES(8)) {
+    int t = 0;
+    while(t == 0) {
+        t += 1;
         header_t* buddy_addr = (header_t*)((((uintptr_t)header + HEADER_SIZE) ^ ((uintptr_t)(header->size) + HEADER_SIZE)) - HEADER_SIZE); 
     
         // printf("header: %p, size: %d\nbuddy: %p, size: %d\n",header, header->size, buddy_addr, buddy_addr->size);
@@ -196,10 +197,10 @@ static void kfree(void *ptr) {
     } else {
         // free buddy. 
         header_t* h_addr = (header_t*)((intptr_t)ptr - HEADER_SIZE);
-        lock_acquire(&h_addr->mutex);
-        h_addr->occupied = false;
-        lock_release(&h_addr->mutex);
-        // buddy_free(h_addr);
+        // lock_acquire(&h_addr->mutex);
+        // h_addr->occupied = false;
+        // lock_release(&h_addr->mutex);
+        buddy_free(h_addr);
     }
 
 }
