@@ -123,13 +123,13 @@ static inline void buddy_free(header_t* header) {
     while(header->size + HEADER_SIZE < KB_TO_BYTES(8)) {
         header_t* buddy_addr = (header_t*)((((uintptr_t)header + HEADER_SIZE) ^ ((uintptr_t)(header->size) + HEADER_SIZE)) - HEADER_SIZE); 
     
-        printf("header: %p, size: %d\nbuddy: %p, size: %d\n",header, header->size, buddy_addr, buddy_addr->size);
+        // printf("header: %p, size: %d\nbuddy: %p, size: %d\n",header, header->size, buddy_addr, buddy_addr->size);
 
         lock_acquire(&buddy_addr->mutex);
         
         if ( (buddy_addr->size == header->size) && (!buddy_addr->occupied) ) {
             //find a buddy to merge.
-            printf("find a buddy to merge.\n");
+            // printf("find a buddy to merge.\n");
             if ((uintptr_t)header < (uintptr_t)buddy_addr) {
                 header_t* temp = header;
                 header = buddy_addr;
@@ -138,15 +138,15 @@ static inline void buddy_free(header_t* header) {
             } 
             header->size = header->size + HEADER_SIZE + header->size;
             header->next = (header_t*)((uintptr_t)header + HEADER_SIZE + header->size);
-            printf("before release.\n");
+            // printf("before release.\n");
             lock_release(&buddy_addr->mutex);
-            printf("after a buddy merged.\n");
+            // printf("after a buddy merged.\n");
             //
         } else {
-            printf("can not merge.\n");
+            // printf("can not merge.\n");
             break;
         }
-        printf("current header: %p size: %d\n", header, header->size);
+        // printf("current header: %p size: %d\n", header, header->size);
     }
 
     lock_release(&header->mutex);
@@ -250,9 +250,9 @@ static void pmm_init() {
     write_header((first_buddy_addr - SMALL_SIZE), small_end_header);
     first_small_addr = (header_t*)last_addr;
 
-    void* p1 = kalloc(KB_TO_BYTES(2));
-    printf("p1: %p\n", p1);
-    kfree(p1);
+    // void* p1 = kalloc(KB_TO_BYTES(2));
+    // printf("p1: %p\n", p1);
+    // kfree(p1);
 
 }
 
