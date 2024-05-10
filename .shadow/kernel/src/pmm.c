@@ -69,41 +69,23 @@ static int small_sum;
 
 // helper function 
 
-// static inline intptr_t buddy_search(size_t size, intptr_t node_h) {
-//     header_t* header = read_header((void*) node_h);
-//     lock_acquire(&header->mutex);
-
-//     lock_release(&header->mutex);
-// }
 static inline void *buddy_alloc(size_t size) {
     header_t* header = first_buddy_addr;
     while(1) {
         header_t* next_header = NULL;
         
-        // printf("current header %p, size: %d, occupied: %d next: %p\n", header, header->size, header->occupied, header->next);
-
-        // printf("%p try acquire lock.\n", header);
         lock_acquire(&header->mutex);
-        // printf("%p acquired lock.\n", header);
         // is occupied or too small
         if ((header->occupied)) {
-            // printf("%p is occupied.\n", header);
             next_header = header->next;
-            // printf("next header %p, size: %d, occupied: %d next: %p\n", header->next, header->next->size, header->next->occupied, header->next->next);
         } else if ((header->size < size)) {
-            // printf("%p is too small.\n", header);
             next_header = header->next;
-            // printf("next header %p, size: %d, occupied: %d next: %p\n", header->next, header->next->size, header->next->occupied, header->next->next);
-
         } else {
             int divide_size = (header->size - HEADER_SIZE) / 2;
             if (divide_size < size) {
                 // find the suitable buddy.
-                // printf("Find the suitable buddy!\n");
                 header->occupied = true;
-                // printf("%p try release lock.\n", header);
                 lock_release(&header->mutex);
-                // printf("%p released lock.\n", header);
                 return (void*)((uintptr_t)header + HEADER_SIZE);
             }
 
@@ -114,21 +96,12 @@ static inline void *buddy_alloc(size_t size) {
             // write_header(new_header_addr, new_header);
             header->next = (header_t*)new_header_addr;
             *(new_header_addr) = new_header;
-            // *(header->next) = new_header;
-            // printf("new header %p, size: %d, occupied: %d next: %p\n", new_header_addr, new_header_addr->size, new_header_addr->occupied, new_header_addr->next);
-            // printf("next header %p, size: %d, occupied: %d next: %p\n", header->next, header->next->size, header->next->occupied, header->next->next);
             header->size = divide_size;
             next_header = header;
             
-        }
-        // printf("continue search...\n");
-        
-        // printf("%p try release lock.\n", header);
+        }        
         lock_release(&header->mutex);
-        // printf("%p released lock.\n", header);
-
         header = next_header;
-        
         // no other buddy space
         if (header == NULL) {
             return NULL;
@@ -225,9 +198,6 @@ static void pmm_init() {
         left_size -= BUDDY_SIZE;
     }
     first_buddy_addr = (header_t*)last_addr;        
-    
-    printf("current buddy num: %d and left size: %d\n", buddy_sum, left_size);
-    printf("current last addr: %p \n", last_addr);
     // init small 
     
     small_sum = 0;
@@ -242,10 +212,6 @@ static void pmm_init() {
     header_t small_end_header = construct_header(SMALL_SIZE - HEADER_SIZE, last_addr);
     write_header((first_buddy_addr - SMALL_SIZE), small_end_header);
     first_small_addr = (header_t*)last_addr;
-
-    
-    
-
 
 }
 
