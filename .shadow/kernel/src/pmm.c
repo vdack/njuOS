@@ -129,6 +129,7 @@ static inline void buddy_free(header_t* header) {
         
         if ( (buddy_addr->size == header->size) && (!buddy_addr->occupied) ) {
             //find a buddy to merge.
+            printf("find a buddy to merge.\n");
             if ((uintptr_t)header < (uintptr_t)buddy_addr) {
                 lock_release(&header->mutex);
                 header = buddy_addr;
@@ -138,6 +139,7 @@ static inline void buddy_free(header_t* header) {
             lock_release(&buddy_addr->mutex);
             //
         } else {
+            printf("can not merge.\n");
             break;
         }
     }
