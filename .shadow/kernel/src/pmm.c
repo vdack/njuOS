@@ -1,6 +1,7 @@
 #include <common.h>
 
 #define BUDDY_RANDOM
+
 // lock part.
 #ifndef _MY_LOCK
 #define _MY_LOCK
@@ -26,7 +27,6 @@ bool try_lock_acquire(lock_t* lock) {
 #endif
 
 // tools funtion and macro 
-
 #define MB_TO_BYTES(x) (x << 20)
 #define BYTES_TO_MB(x) (x >> 20)
 #define KB_TO_BYTES(x) (x << 10)
@@ -69,7 +69,6 @@ static int small_sum;
 
 
 // helper function 
-
 static inline void *buddy_alloc(size_t size) {
 
 #ifdef BUDDY_RANDOM
@@ -96,7 +95,6 @@ static inline void *buddy_alloc(size_t size) {
                 lock_release(&header->mutex);
                 return (void*)((uintptr_t)header + HEADER_SIZE);
             }
-
             // divide current buddy to small ones.
             header_t* new_header_addr = (header_t*)((intptr_t)header + HEADER_SIZE + divide_size);
             header_t new_header = construct_header(divide_size, header->next);
@@ -105,8 +103,7 @@ static inline void *buddy_alloc(size_t size) {
             header->next = (header_t*)new_header_addr;
             *(new_header_addr) = new_header;
             header->size = divide_size;
-            next_header = header;
-            
+            next_header = header;            
         }        
         lock_release(&header->mutex);
         header = next_header;
@@ -116,11 +113,6 @@ static inline void *buddy_alloc(size_t size) {
         }
     }
 }
-
-// static inline void buddy_merge(header_t* header) {
-//     panic_on(header->occupied, "failed! merge an unfreed space!!!\n");
-//     //searh for buddy and test if merge.
-// }
 
 static inline void buddy_free(header_t* header) {
     //TODO NOW JUST MERGE ONCE!!!
@@ -142,13 +134,10 @@ static inline void buddy_free(header_t* header) {
         lock_release(&buddy_addr->mutex);
         //
     }
-    
     lock_release(&header->mutex);
-
 }
 
 // small space
-
 static inline void* small_alloc() {
     int offset = rand() % small_sum;
     void* target_addr = (void*)((uintptr_t)first_small_addr + SMALL_SIZE * offset);
