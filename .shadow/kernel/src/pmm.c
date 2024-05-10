@@ -243,7 +243,7 @@ static void pmm_init() {
     write_header((first_buddy_addr - SMALL_SIZE), small_end_header);
     first_small_addr = (header_t*)last_addr;
 
-    void* p1 = kalloc(KB_TO_BYTES(13));
+    void* p1 = kalloc(KB_TO_BYTES(2));
     printf("p1: %p\n", p1);
     kfree(p1);
 
