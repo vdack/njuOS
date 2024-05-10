@@ -109,9 +109,37 @@ static inline void *buddy_alloc(size_t size) {
     }
 }
 
-static inline void buddy_merge(header_t* header) {
-    panic_on(header->occupied, "failed! merge an unfreed space!!!\n");
-    //searh for buddy and test if merge.
+// static inline void buddy_merge(header_t* header) {
+//     panic_on(header->occupied, "failed! merge an unfreed space!!!\n");
+//     //searh for buddy and test if merge.
+// }
+
+static inline void buddy_free(header_t* header) {
+    //TODO NOW JUST MERGE ONCE!!!
+
+    lock_acquire(&header->mutex);
+    header->occupied = false;
+    while (header->size + HEADER_SIZE < BUDDY_SIZE) {
+        header_t* buddy_addr = (header_t*)((((uintptr_t)header + HEADER_SIZE) ^ ((uintptr_t)(header->size) + HEADER_SIZE)) - HEADER_SIZE); 
+        lock_acquire(&buddy_addr->mutex);
+        
+        if ( (buddy_addr->size == header->size) && (!buddy_addr->occupied) ) {
+            //find a buddy to merge.
+            if ((uintptr_t)header < (uintptr_t)buddy_addr) {
+                lock_release(&header->mutex);
+                header = buddy_addr;
+            } 
+            header->size = header->size + HEADER_SIZE + header->size;
+            header->next = (header_t*)((uintptr_t)header + HEADER_SIZE + header->size);
+            lock_release(&buddy_addr->mutex);
+            //
+        } else {
+            // can not find a buddy to merge.
+            break;
+        }
+    }
+    lock_release(&header->mutex);
+
 }
 
 // small space
@@ -159,10 +187,10 @@ static void kfree(void *ptr) {
     } else {
         // free buddy. 
         header_t* h_addr = (header_t*)((intptr_t)ptr - HEADER_SIZE);
-        lock_acquire(&h_addr->mutex);
-        h_addr->occupied = false;
-        lock_release(&h_addr->mutex);
-        // buddy_merge(h_addr);
+        // lock_acquire(&h_addr->mutex);
+        // h_addr->occupied = false;
+        // lock_release(&h_addr->mutex);
+        buddy_free(h_addr);
     }
 
 }
