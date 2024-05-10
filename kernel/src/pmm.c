@@ -168,11 +168,28 @@ static inline void buddy_merge(header_t* header) {
 static inline void* small_alloc() {
     int offset = rand() % small_sum;
     void* target_addr = (void*)((uintptr_t)first_small_addr + SMALL_SIZE * offset);
-    while (((header_t*)target_addr)->occupied) {
-        target_addr = (void*)(((header_t*)target_addr)->next);
+    while(1) {
+        bool rc = try_lock_acquire(&((header_t*)target_addr)->mutex);
+        if (rc) {
+            if (((header_t*)target_addr)->occupied) {
+                lock_release(&((header_t*)target_addr)->mutex);
+                target_addr = (void*)(((header_t*)target_addr)->next);
+            } else {
+                ((header_t*)target_addr)->occupied = true;
+                lock_release(&((header_t*)target_addr)->mutex);
+                return (void*)((uintptr_t)target_addr + HEADER_SIZE);
+            }
+        } else {
+            target_addr = (void*)(((header_t*)target_addr)->next);
+        }
     }
-    ((header_t*)target_addr)->occupied = true;
-    return (void*)((uintptr_t)target_addr + HEADER_SIZE);
+
+
+    // while (((header_t*)target_addr)->occupied) {
+    //     target_addr = (void*)(((header_t*)target_addr)->next);
+    // }
+    // ((header_t*)target_addr)->occupied = true;
+    // return (void*)((uintptr_t)target_addr + HEADER_SIZE);
 } 
 
 
