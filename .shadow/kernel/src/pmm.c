@@ -127,7 +127,7 @@ static inline void buddy_free(header_t* header) {
 
     lock_acquire(&header->mutex);
     header->occupied = false;
-    while (header->size + HEADER_SIZE < BUDDY_SIZE) {
+    while (header->size + HEADER_SIZE <  KB_TO_BYTES(8)) {
         header_t* buddy_addr = (header_t*)((((uintptr_t)header + HEADER_SIZE) ^ ((uintptr_t)(header->size) + HEADER_SIZE)) - HEADER_SIZE); 
         lock_acquire(&buddy_addr->mutex);
         
