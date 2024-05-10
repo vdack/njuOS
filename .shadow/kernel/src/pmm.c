@@ -120,23 +120,28 @@ static inline void buddy_free(header_t* header) {
     lock_acquire(&header->mutex);
     header->occupied = false;
 
-    header_t* buddy_addr = (header_t*)((((uintptr_t)header + HEADER_SIZE) ^ ((uintptr_t)(header->size) + HEADER_SIZE)) - HEADER_SIZE); 
+    while(header->size + HEADER_SIZE < KB_TO_BYTES(8)) {
+        header_t* buddy_addr = (header_t*)((((uintptr_t)header + HEADER_SIZE) ^ ((uintptr_t)(header->size) + HEADER_SIZE)) - HEADER_SIZE); 
     
-    printf("header: %p, size: %d\nbuddy: %p, size: %d\n",header, header->size, buddy_addr, buddy_addr->size);
+        printf("header: %p, size: %d\nbuddy: %p, size: %d\n",header, header->size, buddy_addr, buddy_addr->size);
 
-    lock_acquire(&buddy_addr->mutex);
-    
-    if ( (buddy_addr->size == header->size) && (!buddy_addr->occupied) ) {
-        //find a buddy to merge.
-        if ((uintptr_t)header < (uintptr_t)buddy_addr) {
-            lock_release(&header->mutex);
-            header = buddy_addr;
-        } 
-        header->size = header->size + HEADER_SIZE + header->size;
-        header->next = (header_t*)((uintptr_t)header + HEADER_SIZE + header->size);
-        lock_release(&buddy_addr->mutex);
-        //
+        lock_acquire(&buddy_addr->mutex);
+        
+        if ( (buddy_addr->size == header->size) && (!buddy_addr->occupied) ) {
+            //find a buddy to merge.
+            if ((uintptr_t)header < (uintptr_t)buddy_addr) {
+                lock_release(&header->mutex);
+                header = buddy_addr;
+            } 
+            header->size = header->size + HEADER_SIZE + header->size;
+            header->next = (header_t*)((uintptr_t)header + HEADER_SIZE + header->size);
+            lock_release(&buddy_addr->mutex);
+            //
+        } else {
+            break;
+        }
     }
+
     lock_release(&header->mutex);
 }
 
