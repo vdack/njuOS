@@ -136,7 +136,9 @@ static inline void buddy_free(header_t* header) {
             } 
             header->size = header->size + HEADER_SIZE + header->size;
             header->next = (header_t*)((uintptr_t)header + HEADER_SIZE + header->size);
+            printf("before release.\n");
             lock_release(&buddy_addr->mutex);
+            printf("after a buddy merged.\n");
             //
         } else {
             printf("can not merge.\n");
