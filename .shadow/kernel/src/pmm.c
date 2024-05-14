@@ -1,7 +1,5 @@
 #include <common.h>
 
-#define BUDDY_RANDOM
-
 // lock part.
 #ifndef _MY_LOCK
 #define _MY_LOCK
@@ -27,10 +25,12 @@ bool try_lock_acquire(lock_t* lock) {
 #endif
 
 // tools funtion and macro 
+
 #define MB_TO_BYTES(x) (x << 20)
 #define BYTES_TO_MB(x) (x >> 20)
 #define KB_TO_BYTES(x) (x << 10)
 #define RAND_SEED 1231238888
+
 
 // header def
 typedef struct _header {
@@ -41,7 +41,12 @@ typedef struct _header {
     
 } header_t;
 #define HEADER_SIZE sizeof(header_t)
+#define NONE_NEXT 0
 
+inline static header_t* read_header(void* addr) {
+    header_t* header = ((header_t*)addr); 
+    return header;
+}
 inline static void write_header(void* addr, header_t header) {
     *((header_t*)addr) = header;
 }
@@ -61,16 +66,11 @@ static header_t* first_small_addr;
 static int buddy_sum;
 static int small_sum;
 
-// helper function 
-static inline void *buddy_alloc(size_t size) {
 
-#ifdef BUDDY_RANDOM
-    int offset = rand() % buddy_sum;
-    header_t* header = (header_t*)((uintptr_t)first_buddy_addr + offset * BUDDY_SIZE);
-#else
+// helper function 
+
+static inline void *buddy_alloc(size_t size) {
     header_t* header = first_buddy_addr;
-#endif
-    
     while(1) {
         header_t* next_header = NULL;
         
@@ -88,6 +88,7 @@ static inline void *buddy_alloc(size_t size) {
                 lock_release(&header->mutex);
                 return (void*)((uintptr_t)header + HEADER_SIZE);
             }
+
             // divide current buddy to small ones.
             header_t* new_header_addr = (header_t*)((intptr_t)header + HEADER_SIZE + divide_size);
             header_t new_header = construct_header(divide_size, header->next);
@@ -96,7 +97,8 @@ static inline void *buddy_alloc(size_t size) {
             header->next = (header_t*)new_header_addr;
             *(new_header_addr) = new_header;
             header->size = divide_size;
-            next_header = header;            
+            next_header = header;
+            
         }        
         lock_release(&header->mutex);
         header = next_header;
@@ -107,35 +109,13 @@ static inline void *buddy_alloc(size_t size) {
     }
 }
 
-static inline void buddy_free(header_t* header) {
-    lock_acquire(&header->mutex);
-    header->occupied = false;
-    while(header->size +HEADER_SIZE < KB_TO_BYTES(8)) {
-        header_t* buddy_addr = (header_t*)((((uintptr_t)header + HEADER_SIZE) ^ ((uintptr_t)(header->size) + HEADER_SIZE)) - HEADER_SIZE); 
-        bool rc = try_lock_acquire(&buddy_addr->mutex);
-        if (!rc) {
-            break;
-        }
-        if ( (buddy_addr->size == header->size) && (!buddy_addr->occupied) ) {
-            //find a buddy to merge.
-            if ((uintptr_t)header > (uintptr_t)buddy_addr) {
-                header_t* temp = header;
-                header = buddy_addr;
-                buddy_addr = temp;
-            } 
-            header->size = header->size + HEADER_SIZE + header->size;
-            header->next = buddy_addr->next;
-            lock_release(&buddy_addr->mutex);
-        } else {
-            lock_release(&buddy_addr->mutex);
-            break;
-        }
-    }
-
-    lock_release(&header->mutex);
+static inline void buddy_merge(header_t* header) {
+    panic_on(header->occupied, "failed! merge an unfreed space!!!\n");
+    //searh for buddy and test if merge.
 }
 
 // small space
+
 static inline void* small_alloc() {
     int offset = rand() % small_sum;
     void* target_addr = (void*)((uintptr_t)first_small_addr + SMALL_SIZE * offset);
@@ -179,7 +159,10 @@ static void kfree(void *ptr) {
     } else {
         // free buddy. 
         header_t* h_addr = (header_t*)((intptr_t)ptr - HEADER_SIZE);
-        buddy_free(h_addr);
+        lock_acquire(&h_addr->mutex);
+        h_addr->occupied = false;
+        lock_release(&h_addr->mutex);
+        // buddy_merge(h_addr);
     }
 
 }
@@ -199,8 +182,8 @@ static void pmm_init() {
     // other init
     srand(RAND_SEED);
     uintptr_t virtual_end = (uintptr_t)heap.end & (~((uintptr_t)BUDDY_SIZE - 1));
-    
     //init the buddy segement.
+    
     buddy_sum = 1;
     uintptr_t left_size = virtual_end - (uintptr_t)heap.start - BUDDY_SIZE;
     header_t last_buddy_header = construct_header(BUDDY_SIZE - HEADER_SIZE, NULL);
@@ -215,8 +198,8 @@ static void pmm_init() {
         left_size -= BUDDY_SIZE;
     }
     first_buddy_addr = (header_t*)last_addr;        
-    
     // init small 
+    
     small_sum = 0;
     while (left_size > SMALL_SIZE) {
         small_sum += 1;
@@ -225,9 +208,11 @@ static void pmm_init() {
         write_header(last_addr, small_header);
         left_size -= SMALL_SIZE;
     }
+    // printf("after small \n");
     header_t small_end_header = construct_header(SMALL_SIZE - HEADER_SIZE, last_addr);
     write_header((first_buddy_addr - SMALL_SIZE), small_end_header);
     first_small_addr = (header_t*)last_addr;
+
 }
 
 MODULE_DEF(pmm) = {
