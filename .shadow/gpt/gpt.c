@@ -2,6 +2,7 @@
 // https://github.com/karpathy/llm.c
 
 #include <math.h>
+#include <pthread.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -83,26 +84,125 @@ void layernorm_forward(float *out, float *mean, float *rstd, float *inp,
   }
 }
 
+// TODO
+#define THREAD_NUM 4
+
+#define FLAG_WAIT 1
+#define FLAG_RUN 2
+#define FLAG_FINISHED 3
+#define FLAG_END 4
+
+// #define _MY_DEBUG
+#ifdef _MY_DEBUG
+#define debug(...) printf(__VA_ARGS__)
+#else
+#define debug(...)
+#endif
+
+typedef struct _mission {
+  float *out;
+  float *inp;
+  float *weight;
+  float *bias;
+  int B;
+  int T;
+  int C;
+  int OC;
+} mission_t;
+
+typedef struct _status {
+  mutex_t mutex;
+  int stat;
+} status_t;
+
+volatile mission_t mission;
+static inline void set_mission(float *out, float *inp, float *weight,
+                               float *bias, int B, int T, int C, int OC) {
+  mission.out = out;
+  mission.inp = inp;
+  mission.weight = weight;
+  mission.bias = bias;
+  mission.B = B;
+  mission.T = T;
+  mission.C = C;
+  mission.OC = OC;
+}
+
+static status_t status[THREAD_NUM + 1];
+
+static mutex_t counter_mutex = MUTEX_INIT();
+volatile static int work_counter = 0;
+
+static cond_t consumer = COND_INIT();
+static cond_t restart = COND_INIT();
+static cond_t producer = COND_INIT();
+
+void work(int num) {
+  while (1) {
+    mutex_lock(&status[num].mutex);
+    while (status[num].stat == FLAG_WAIT) {
+      cond_wait(&consumer, &status[num].mutex);
+    }
+    mutex_unlock(&status[num].mutex);
+
+    if (status[num].stat == FLAG_END) {
+      break;
+    } else {
+      status[num].stat = FLAG_WAIT;
+    }
+
+    // work here
+    int s_o = (num - 1) * (mission.OC / THREAD_NUM);
+    int e_o;
+    if (num == THREAD_NUM) {
+      e_o = mission.OC;
+    } else {
+      e_o = num * (mission.OC / THREAD_NUM);
+    }
+    for (int b = 0; b < mission.B; b++) {
+      for (int t = 0; t < mission.T; t++) {
+        float *out_bt =
+            mission.out + b * mission.T * mission.OC + t * mission.OC;
+        float *inp_bt = mission.inp + b * mission.T * mission.C + t * mission.C;
+        for (int o = s_o; o < e_o; o++) {
+          float val = (mission.bias != NULL) ? mission.bias[o] : 0.0f;
+          float *wrow = mission.weight + o * mission.C;
+          for (int i = 0; i < mission.C; i++) {
+            val += inp_bt[i] * wrow[i];
+          }
+          out_bt[o] = val;
+        }
+      }
+    }
+
+    mutex_lock(&counter_mutex);
+    work_counter = work_counter - 1;
+    mutex_unlock(&counter_mutex);
+    cond_signal(&producer);
+  }
+}
+
 void matmul_forward(float *out, float *inp, float *weight, float *bias, int B,
                     int T, int C, int OC) {
   // most of the running time is spent here and in matmul_backward
   // OC is short for "output channels"
   // inp is (B,T,C), weight is (OC, C), bias is (OC)
   // out will be (B,T,OC)
-  for (int b = 0; b < B; b++) {
-    for (int t = 0; t < T; t++) {
-      float *out_bt = out + b * T * OC + t * OC;
-      float *inp_bt = inp + b * T * C + t * C;
-      for (int o = 0; o < OC; o++) {
-        float val = (bias != NULL) ? bias[o] : 0.0f;
-        float *wrow = weight + o * C;
-        for (int i = 0; i < C; i++) {
-          val += inp_bt[i] * wrow[i];
-        }
-        out_bt[o] = val;
-      }
-    }
+  work_counter = THREAD_NUM;
+  set_mission(out, inp, weight, bias, B, T, C, OC);
+
+  for (int i = 1; i <= THREAD_NUM; i += 1) {
+    mutex_lock(&status[i].mutex);
+    status[i].stat = FLAG_RUN;
+    mutex_unlock(&status[i].mutex);
   }
+  cond_broadcast(&consumer);
+
+  mutex_lock(&counter_mutex);
+  while (work_counter != 0) {
+    cond_wait(&producer, &counter_mutex);
+  }
+  mutex_unlock(&counter_mutex);
 }
 
 void attention_forward(float *out, float *preatt, float *att, float *inp, int B,
@@ -616,6 +716,12 @@ int main(int argc, char **argv) {
     }
   }
 
+  // my init
+  for (int i = 1; i <= THREAD_NUM; i += 1) {
+    status[i].stat = FLAG_WAIT;
+    create(work);
+  }
+
   for (int t = argc - 1; t < n; t++) {
     gpt2_forward(&model, tokens, 1, t);
     float *probs = model.acts.probs + (t - 1) * model.config.vocab_size;
@@ -626,9 +732,16 @@ int main(int argc, char **argv) {
     fflush(stdout);
   }
 
+  // end status
+  for (int i = 1; i <= THREAD_NUM; i += 1) {
+    mutex_lock(&status[i].mutex);
+    status[i].stat = FLAG_END;
+    mutex_unlock(&status[i].mutex);
+  }
+
+  cond_broadcast(&consumer);
   gpt2_free(&model);
   clock_t t2 = clock();
   printf("time: %ld\n", t2 - t1);
-
   return 0;
 }
