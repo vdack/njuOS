@@ -13,8 +13,8 @@ static inline int parse_line(char* line) {
 }
 
 int main(int argc, char *argv[]) {
-    int target = mkstemp("target.c", 0777);
-    int buffer = mkstemp("buffer.c", 0777);
+    int target = mkstemp("target.c");
+    int buffer = mkstemp("buffer.c");
     // first write the line into the buffer and try to compile
     // if succed, add it into target.
 
