@@ -2,6 +2,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <fcntl.h>
 #define T_EXPR 0
 #define T_FUNC 1
 
@@ -16,8 +17,8 @@ int main(int argc, char *argv[]) {
     printf("before create file.\n");
     char s_target[32] = "/tmp/targetXXXXXX.c";
     char s_buffer[32] = "/tmp/bufferXXXXXX.c";
-    int target = mkostemps(s_target, 2, 0777);
-    int buffer = mkostemps(s_buffer, 2, 0777);
+    int target = mkostemps(s_target, 2, O_APPEND | O_CLOEXEC);
+    int buffer = mkostemps(s_buffer, 2, O_APPEND | O_CLOEXEC);
     // first write the line into the buffer and try to compile
     // if succed, add it into target.
     printf("after create file.\n");
