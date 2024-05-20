@@ -13,11 +13,12 @@ static inline int parse_line(char* line) {
 }
 
 int main(int argc, char *argv[]) {
+    printf("before create file.\n");
     int target = mkstemp("targetXXXXXX");
     int buffer = mkstemp("bufferXXXXXX");
     // first write the line into the buffer and try to compile
     // if succed, add it into target.
-
+    printf("after create file.\n");
     if (target == -1 || buffer == -1) {
         perror("Failed to create file.\n");
         return 1;
