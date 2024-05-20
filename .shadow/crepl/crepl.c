@@ -14,8 +14,10 @@ static inline int parse_line(char* line) {
 
 int main(int argc, char *argv[]) {
     printf("before create file.\n");
-    int target = mkstemp("targetXXXXXX");
-    int buffer = mkstemp("bufferXXXXXX");
+    char s_target[16] = "targetXXXXXX";
+    char s_buffer[16] = "bufferXXXXXX";
+    int target = mkstemp(s_target);
+    int buffer = mkstemp(s_buffer);
     // first write the line into the buffer and try to compile
     // if succed, add it into target.
     printf("after create file.\n");
