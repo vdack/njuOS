@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
-
+#include <stdlib.h>
 #define T_EXPR 0
 #define T_FUNC 1
 
