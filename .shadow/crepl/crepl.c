@@ -16,8 +16,8 @@ int main(int argc, char *argv[]) {
     printf("before create file.\n");
     char s_target[16] = "/tmp/targetXXXXXX.c";
     char s_buffer[16] = "/tmp/bufferXXXXXX.c";
-    int target = mkostemps(s_target, 2);
-    int buffer = mkostemps(s_buffer, 2);
+    int target = mkostemps(s_target, 2, 0777);
+    int buffer = mkostemps(s_buffer, 2, 0777);
     // first write the line into the buffer and try to compile
     // if succed, add it into target.
     printf("after create file.\n");
