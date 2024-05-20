@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/time.h>
 #include <time.h>
 #include <unistd.h>
 
@@ -692,7 +693,8 @@ int sample_mult(float *probabilities, int n) {
 #define GPT2_EOT 50256
 
 int main(int argc, char **argv) {
-  clock_t t1 = clock();
+  struct timeval t1, t2;
+  gettimeofday(&t1, NULL);
   GPT2 model;
   gpt2_build_from_checkpoint(&model, "gpt2_124M.bin");
   const int n = 10; // Token limit.
@@ -741,7 +743,8 @@ int main(int argc, char **argv) {
 
   cond_broadcast(&consumer);
   gpt2_free(&model);
-  clock_t t2 = clock();
-  printf("time: %ld\n", t2 - t1);
+  gettimeofday(&t2, NULL);
+  printf("time: %f\n", (float)(t2.tv_sec - t1.tv_sec) +
+                           (float)((float)(t2.tv_usec - t1.tv_usec) / 1000000));
   return 0;
 }
