@@ -46,14 +46,15 @@ int main(int argc, char *argv[]) {
 
         if (type == T_FUNC) {
             // a function.
-            char new_line[4096] = "int wrapper(){return (";
-            strcat(new_line, line);
-            strcat(new_line, ");}");
-            write(buffer, new_line, strlen(line) + 1);
+            write(buffer, line, strlen(line) + 1);
 
         } else {
             // an expression. 
-            write(buffer, line, strlen(line) + 1);
+            
+            char new_line[4096] = "int wrapper(){return (";
+            strcat(new_line, line);
+            strcat(new_line, ");}");
+            write(buffer, new_line, strlen(new_line) + 1);
         }
 
 
