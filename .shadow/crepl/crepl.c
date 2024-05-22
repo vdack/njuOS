@@ -49,7 +49,7 @@ int main(int argc, char *argv[]) {
             char new_line[4096] = "int wrapper(){return (";
             strcat(new_line, line);
             strcat(new_line, ");}");
-            write(buffer, line, strlen(line) + 1);
+            write(buffer, new_line, strlen(line) + 1);
 
         } else {
             // an expression. 
