@@ -50,10 +50,10 @@ int main(int argc, char *argv[]) {
 
         } else {
             // an expression. 
-            
+            line[strlen(line) - 1] = '\0';
             char new_line[4096] = "int wrapper(){return (";
             strcat(new_line, line);
-            strcat(new_line, ");}");
+            strcat(new_line, ");}\n");
             write(buffer, new_line, strlen(new_line) + 1);
         }
 
