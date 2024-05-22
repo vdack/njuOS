@@ -27,8 +27,9 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    static char line[4096];
 
+
+    static char line[4096];
     while (1) {
         printf("crepl> ");
         fflush(stdout);
@@ -43,8 +44,11 @@ int main(int argc, char *argv[]) {
 
         if (type == T_FUNC) {
             // a function.
+            write(buffer, line, strlen(line) + 1);
+
         } else {
             // an expression. 
+            write(buffer, line, strlen(line) + 1);
         }
 
 
