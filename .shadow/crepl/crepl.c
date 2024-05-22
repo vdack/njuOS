@@ -13,11 +13,24 @@ static inline int parse_line(char* line) {
     return T_EXPR;
 }
 
+static char* buffer_args[7];
+static char* target_args[9];
+
 int _wrapper();
-static inline void init_env() {
+static inline void init_env(char* buffer_name, char* target_name) {
     setenv("LD_LIBRARY_PATH", "/tmp", 1);
+    buffer_args[0] = strdup("gcc");
+    buffer_args[1] = strdup("-fPIC");
+    buffer_args[2] = strdup("-shared");
+    buffer_args[3] = strdup("-o");
+    buffer_args[4] = strdup("libmybuffer.so");
+    buffer_args[5] = strdup(buffer_name);
+    buffer_args[6] = NULL;
+
+
 }
-static inline void try_compile() {
+
+static inline void compile_buffer() {
     //
 }
 int main(int argc, char *argv[]) {
@@ -66,13 +79,15 @@ int main(int argc, char *argv[]) {
 
         }
 
-        // rc = fork();
-        // if (rc == 0) {
-        //     //child.
+        rc = fork();
+        if (rc == 0) {
+            //child.
+            execvp(buffer_args[0], buffer_args);
             
-        // } else {
-        //     //parent.
-        // }
+        } else {
+            //parent.
+            wait(NULL);
+        }
 
 
 
