@@ -13,6 +13,8 @@ static inline int parse_line(char* line) {
     return T_EXPR;
 }
 
+int wrapper();
+
 int main(int argc, char *argv[]) {
     printf("before create file.\n");
     char s_target[32] = "/tmp/targetXXXXXX.c";
@@ -44,6 +46,9 @@ int main(int argc, char *argv[]) {
 
         if (type == T_FUNC) {
             // a function.
+            char new_line[4096] = "int wrapper(){return (";
+            strcat(new_line, line);
+            strcat(new_line, ");}");
             write(buffer, line, strlen(line) + 1);
 
         } else {
