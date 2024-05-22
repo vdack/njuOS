@@ -13,8 +13,13 @@ static inline int parse_line(char* line) {
     return T_EXPR;
 }
 
-int wrapper();
-
+int _wrapper();
+static inline void init_env() {
+    setenv("LD_LIBRARY_PATH", "/tmp", 1);
+}
+static inline void try_compile() {
+    //
+}
 int main(int argc, char *argv[]) {
     printf("before create file.\n");
     char s_target[32] = "/tmp/targetXXXXXX.c";
@@ -23,15 +28,16 @@ int main(int argc, char *argv[]) {
     int buffer = mkstemps(s_buffer, 2);
     // first write the line into the buffer and try to compile
     // if succed, add it into target.
-    printf("after create file.\n");
+    printf("after create file. %s and %s\n", s_buffer, s_target);
     if (target == -1 || buffer == -1) {
         perror("Failed to create file.\n");
         return 1;
     }
 
-
+    init_env();
 
     static char line[4096];
+    int rc = -1;
     while (1) {
         printf("crepl> ");
         fflush(stdout);
@@ -48,14 +54,25 @@ int main(int argc, char *argv[]) {
             // a function.
             write(buffer, line, strlen(line) + 1);
 
+
         } else {
             // an expression. 
             line[strlen(line) - 1] = '\0';
-            char new_line[4096] = "int wrapper(){return (";
+            char new_line[4096] = "int _wrapper(){return (";
             strcat(new_line, line);
             strcat(new_line, ");}\n");
             write(buffer, new_line, strlen(new_line) + 1);
+
+
         }
+
+        // rc = fork();
+        // if (rc == 0) {
+        //     //child.
+            
+        // } else {
+        //     //parent.
+        // }
 
 
 
