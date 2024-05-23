@@ -145,6 +145,7 @@ int main(int argc, char *argv[]) {
             write(target, line, strlen(line) + 1);
             printf("Added: %s \n", line);
             close(target);
+            compile_target();
         } else {
             int (*fc)(void);
             void* handle;
