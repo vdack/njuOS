@@ -169,7 +169,7 @@ int main(int argc, char *argv[]) {
                 dlclose(handle);
                 return 1;
             }
-
+            printf("before run the function.\n");
             printf("(%s) == %d\n", line, fc());
             dlclose(handle);
         }
