@@ -23,29 +23,29 @@ static inline void init_env(char* buffer_name, char* target_name) {
 
     buffer_args[0] = strdup("gcc");
     buffer_args[1] = strdup("-fPIC");
-#ifdef __x86_64__
-    buffer_args[2] = strdup("-shared -m64");
-#else 
-    buffer_args[2] = strdup("-shared -m32");
-#endif
+    buffer_args[2] = strdup("-shared");
     buffer_args[3] = strdup("-o");
     buffer_args[4] = strdup("/tmp/libmybuffer.so");
     buffer_args[5] = strdup(buffer_name);
     buffer_args[6] = strdup("-L/tmp");
     buffer_args[7] = strdup("-lmytarget");
-    buffer_args[8] = NULL;
+#ifdef __x86_64__
+    buffer_args[8] = strdup("-m64");
+#else 
+    buffer_args[8] = strdup("-m32");
+#endif 
 
     target_args[0] = strdup("gcc");
     target_args[1] = strdup("-fPIC");
-#ifdef __x86_64__
-    target_args[2] = strdup("-shared -m64");
-#else 
-    target_args[2] = strdup("-shared -m32");
-#endif
+    target_args[2] = strdup("-shared");
     target_args[3] = strdup("-o");
     target_args[4] = strdup("/tmp/libtarget.so");
     target_args[5] = strdup(target_name);
-    target_args[6] = NULL;
+#ifdef __x86_64__
+    target_args[6] = strdup("-m64");
+#else 
+    target_args[6] = strdup("-m32");
+#endif 
     target_args[7] = NULL;
     target_args[8] = NULL;
 
