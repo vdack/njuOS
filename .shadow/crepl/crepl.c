@@ -37,7 +37,7 @@ static inline void init_env(char* buffer_name, char* target_name) {
     buffer_args[8] = strdup("-m32");
 #endif 
     buffer_args[9] = strdup("-w");
-    buffer_args[10] = strdup("-rpath=.");
+    buffer_args[10] = strdup("-Wl,-rpath=/tmp");
     buffer_args[11] = NULL;
 
     target_args[0] = strdup("gcc");
