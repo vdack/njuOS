@@ -19,7 +19,7 @@ static char* buffer_args[10];
 static char* target_args[9];
 
 static inline void init_env(char* buffer_name, char* target_name) {
-    setenv("LD_LIBRARY_PATH", "/tmp", 1);
+    // setenv("LD_LIBRARY_PATH", "/tmp", 1);
 
     buffer_args[0] = strdup("gcc");
     buffer_args[1] = strdup("-fPIC");
@@ -171,16 +171,9 @@ int main(int argc, char *argv[]) {
             }
 
             printf("(%s) == %d\n", line, fc());
-            // 关闭共享库
             dlclose(handle);
         }
-        
-
-
-
-        // My implementation above.
-
-        printf("Got %zu chars.\n", strlen(line));
+    
     }
 
     return 0;
