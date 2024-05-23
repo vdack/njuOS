@@ -156,13 +156,14 @@ int main(int argc, char *argv[]) {
             void* handle;
             char* error;
 
+            printf("before open the lib.\n");
             handle = dlopen("/tmp/libmybuffer.so", RTLD_LAZY);
             if (!handle) {
                 fprintf(stderr, "%s\n", dlerror());
                 return 1;
             }
             dlerror();
-            printf("before open the lib.\n");
+
             *(int **) (&fc) = dlsym(handle, "_wrapper");
             if ((error = dlerror()) != NULL)  {
                 fprintf(stderr, "%s\n", error);
