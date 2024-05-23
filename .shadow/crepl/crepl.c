@@ -65,13 +65,13 @@ static inline void compile_target() {
 
 int main(int argc, char *argv[]) {
 
-#ifdef __x86_64__
-    printf("on 64 machine.\n");
-#else 
-    printf("on 32 machine.\n");
-#endif
+// #ifdef __x86_64__
+//     printf("on 64 machine.\n");
+// #else 
+//     printf("on 32 machine.\n");
+// #endif
 
-    printf("before create file.\n");
+//     printf("before create file.\n");
     char s_target[32] = "/tmp/targetXXXXXX.c";
     char s_buffer[32] = "/tmp/bufferXXXXXX.c";
     int target = mkstemps(s_target, 2);
@@ -79,7 +79,7 @@ int main(int argc, char *argv[]) {
 
     // first write the line into the buffer and try to compile
     // if succed, add it into target.
-    printf("after create file. %s and %s\n", s_buffer, s_target);
+    // printf("after create file. %s and %s\n", s_buffer, s_target);
     if (target == -1 || buffer == -1) {
         perror("Failed to create file.\n");
         return 1;
@@ -138,7 +138,7 @@ int main(int argc, char *argv[]) {
         int status;
         wait(&status);
         int exit_status = WEXITSTATUS(status);
-        printf("get return value: %d\n", exit_status);
+        // printf("get return value: %d\n", exit_status);
 
         if (exit_status != 0) {
             printf("COMPILE ERROR!\n");
@@ -160,7 +160,7 @@ int main(int argc, char *argv[]) {
             void* handle;
             char* error;
 
-            printf("before open the lib.\n");
+            // printf("before open the lib.\n");
             handle = dlopen("/tmp/libmybuffer.so", RTLD_LAZY);
             if (!handle) {
                 fprintf(stderr, "%s\n", dlerror());
@@ -174,7 +174,7 @@ int main(int argc, char *argv[]) {
                 dlclose(handle);
                 return 1;
             }
-            printf("before run the function.\n");
+            // printf("before run the function.\n");
             printf("(%s) == %d\n", line, fc());
             dlclose(handle);
         }
