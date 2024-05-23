@@ -15,7 +15,7 @@ static inline int parse_line(char* line) {
     return T_EXPR;
 }
 
-static char* buffer_args[9];
+static char* buffer_args[10];
 static char* target_args[9];
 
 static inline void init_env(char* buffer_name, char* target_name) {
@@ -34,6 +34,7 @@ static inline void init_env(char* buffer_name, char* target_name) {
 #else 
     buffer_args[8] = strdup("-m32");
 #endif 
+    buffer_args[9] = strdup("-w");
 
     target_args[0] = strdup("gcc");
     target_args[1] = strdup("-fPIC");
@@ -46,7 +47,7 @@ static inline void init_env(char* buffer_name, char* target_name) {
 #else 
     target_args[6] = strdup("-m32");
 #endif 
-    target_args[7] = NULL;
+    target_args[7] = strdup("-w");
     target_args[8] = NULL;
 
 }
@@ -145,7 +146,11 @@ int main(int argc, char *argv[]) {
             write(target, line, strlen(line) + 1);
             printf("Added: %s \n", line);
             close(target);
-            compile_target();
+            rc = fork();
+            if (rc == 0) {
+                compile_target();
+            }
+            wait(NULL);
         } else {
             int (*fc)(void);
             void* handle;
