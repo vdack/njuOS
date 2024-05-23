@@ -19,8 +19,9 @@ static char* buffer_args[10];
 static char* target_args[9];
 
 static inline void init_env(char* buffer_name, char* target_name) {
-    setenv("LD_LIBRARY_PATH", "/tmp/", 1);
-    system("echo $LD_LIBRARY_PATH");
+    // setenv("LD_LIBRARY_PATH", "/tmp/", 1);
+    // system("echo $LD_LIBRARY_PATH");
+    system("export LD_LIBRARY_PATH=/tmp");
 
     buffer_args[0] = strdup("gcc");
     buffer_args[1] = strdup("-fPIC");
