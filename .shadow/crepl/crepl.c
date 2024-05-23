@@ -140,7 +140,7 @@ int main(int argc, char *argv[]) {
             continue;
         }
 
-        if(type == T_EXPR) {
+        if(type == T_FUNC) {
             target = open(s_target, O_WRONLY | O_APPEND);
             write(target, line, strlen(line) + 1);
             printf("Added: %s \n", line);
