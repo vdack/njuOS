@@ -162,7 +162,7 @@ int main(int argc, char *argv[]) {
                 return 1;
             }
             dlerror();
-
+            printf("before open the lib.\n");
             *(int **) (&fc) = dlsym(handle, "_wrapper");
             if ((error = dlerror()) != NULL)  {
                 fprintf(stderr, "%s\n", error);
