@@ -15,7 +15,7 @@ static inline int parse_line(char* line) {
     return T_EXPR;
 }
 
-static char* buffer_args[10];
+static char* buffer_args[12];
 static char* target_args[9];
 
 static inline void init_env(char* buffer_name, char* target_name) {
@@ -37,6 +37,8 @@ static inline void init_env(char* buffer_name, char* target_name) {
     buffer_args[8] = strdup("-m32");
 #endif 
     buffer_args[9] = strdup("-w");
+    buffer_args[10] = strdup("-rpath=/tmp");
+    buffer_args[11] = NULL;
 
     target_args[0] = strdup("gcc");
     target_args[1] = strdup("-fPIC");
