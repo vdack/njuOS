@@ -39,7 +39,7 @@ static inline void init_env(char* buffer_name, char* target_name) {
     target_args[1] = strdup("-fPIC");
     target_args[2] = strdup("-shared");
     target_args[3] = strdup("-o");
-    target_args[4] = strdup("/tmp/libtarget.so");
+    target_args[4] = strdup("/tmp/libmytarget.so");
     target_args[5] = strdup(target_name);
 #ifdef __x86_64__
     target_args[6] = strdup("-m64");
