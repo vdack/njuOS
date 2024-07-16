@@ -1,5 +1,5 @@
 #include <common.h>
-#include "myLock.h"
+#include "myCommon.h"
 
 
 // tools funtion and macro 
@@ -152,10 +152,10 @@ static void pmm_init() {
         - (uintptr_t)heap.start
     );
 
-    printf(
-        "Got %d MiB heap: [%p, %p)\n",
-        pmsize >> 20, heap.start, heap.end
-    );
+    // printf(
+    //     "Got %d MiB heap: [%p, %p)\n",
+    //     pmsize >> 20, heap.start, heap.end
+    // );
     
     // other init
     srand(RAND_SEED);
