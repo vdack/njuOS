@@ -21,14 +21,14 @@ spinlock_t lk_irq;
 static void os_init() {
 
     enroot.next = NULL;
-    spin_init(&lk_irq,"irq");
+    kmt->spin_init(&lk_irq,"irq");
     for (int i = 0; i < CPU_MAX; i += 1) {
         cpu_list[i].current_task = NULL;
         cpu_list[i].lock_counter = 0;
         cpu_list[i].i_status = true;
     }
     task_root.next = NULL;
-    spin_init(&task_lk, "task");
+    kmt->spin_init(&task_lk, "task");
 
     pmm->init();
     kmt->init();
@@ -36,10 +36,12 @@ static void os_init() {
 }
 
 static void os_run() {
-    for (const char *s = "Hello World from CPU #*\n"; *s; s++) {
-        putch(*s == '*' ? '0' + cpu_current() : *s);
-    }
-    while (1) ;
+    // for (const char *s = "Hello World from CPU #*\n"; *s; s++) {
+    //     putch(*s == '*' ? '0' + cpu_current() : *s);
+    // }
+    while (1) {
+        yield();
+    } ;
 }
 
 static void os_on_irq (int seq, int event, handler_t handler) {
@@ -49,7 +51,7 @@ static void os_on_irq (int seq, int event, handler_t handler) {
     new_irq->handler = handler;
     
     enroll_t* before_irq = &enroot;
-    spin_lock(&lk_irq);
+    kmt->spin_lock(&lk_irq);
     while (before_irq->next != NULL) {
         enroll_t* next_irq = before_irq->next;
         if (new_irq->seq >= next_irq->seq) {
@@ -59,12 +61,12 @@ static void os_on_irq (int seq, int event, handler_t handler) {
     }
     new_irq->next = before_irq->next;
     before_irq->next = new_irq;
-    spin_unlock(&lk_irq);
+    kmt->spin_unlock(&lk_irq);
 }
 static Context* os_trap (Event ev, Context *ctx) {
     Context *next = NULL;
 
-    spin_lock(&lk_irq);
+    kmt->spin_lock(&lk_irq);
 
     enroll_t* h = enroot.next;
 
@@ -77,7 +79,7 @@ static Context* os_trap (Event ev, Context *ctx) {
         h = h->next;
     }
 
-    spin_unlock(&lk_irq);
+    kmt->spin_unlock(&lk_irq);
 
     /*
     for (auto &h: handlers_sorted_by_seq) {
