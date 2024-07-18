@@ -1,6 +1,6 @@
+#ifndef _PMM_H_
+#define _PMM_H_
 #include <common.h>
-#include "myCommon.h"
-
 
 // tools funtion and macro 
 
@@ -198,3 +198,5 @@ MODULE_DEF(pmm) = {
     .alloc = kalloc,
     .free  = kfree,
 };
+
+#endif

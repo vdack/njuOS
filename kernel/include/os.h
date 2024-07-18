@@ -7,3 +7,8 @@
 // not present in kernel.h. 
 
 // Include these definitions in os.h.
+
+#ifndef _OS_H_
+#define _OS_H_
+#include<common.h>
+#endif 

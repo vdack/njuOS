@@ -1,5 +1,11 @@
+
+
+#ifndef _OS_H_
+#define _OS_H_
 #include <common.h>
-#include "myCommon.h"
+cpu_t cpu_list[CPU_MAX];
+task_t task_root;
+spinlock_t task_lk;
 typedef struct _enroll {
     int event;
     int seq;
@@ -46,10 +52,10 @@ static void os_on_irq (int seq, int event, handler_t handler) {
     spin_lock(&lk_irq);
     while (before_irq->next != NULL) {
         enroll_t* next_irq = before_irq->next;
-        if (new_irq->seq >= new_irq->seq) {
+        if (new_irq->seq >= next_irq->seq) {
             break;
         }
-        before_irq = new_irq;
+        before_irq = next_irq;
     }
     new_irq->next = before_irq->next;
     before_irq->next = new_irq;
@@ -83,7 +89,7 @@ static Context* os_trap (Event ev, Context *ctx) {
     }
     */
     panic_on(!next, "return to NULL context");
-    panic_on(sane_context(next), "return to invalid context");
+    // panic_on(sane_context(next), "return to invalid context");
     return next;
 }
 
@@ -93,3 +99,5 @@ MODULE_DEF(os) = {
     .on_irq = os_on_irq,
     .trap   = os_trap,
 };
+
+#endif

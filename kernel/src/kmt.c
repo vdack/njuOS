@@ -1,7 +1,9 @@
+
+
+#ifndef _KMT_H_
+#define _KMT_H_
 #include <common.h>
 #include <limits.h>
-#include "myCommon.h"
-
 //type definition
 
 
@@ -88,20 +90,6 @@ static void kmt_teardown (task_t* task) {
     task->status = T_DEAD;
 }
 
-
-static void kmt_sem_init () {
-    //TODO
-}
-
-static void kmt_sem_wait () {
-    //TODO
-}
-
-static void kmt_sem_signal () {
-    //TODO
-}
-
-
 MODULE_DEF(kmt) = {
     .init       =   kmt_init, 
     .create     =   kmt_create,
@@ -109,7 +97,9 @@ MODULE_DEF(kmt) = {
     .spin_init  =   spin_init,
     .spin_lock  =   spin_lock,
     .spin_unlock=   spin_unlock,
-    .sem_init   =   kmt_sem_init,
-    .sem_wait   =   kmt_sem_wait,
-    .sem_signal =   kmt_sem_signal,
+    .sem_init   =   sem_init,
+    .sem_wait   =   sem_wait,
+    .sem_signal =   sem_signal,
 };
+
+#endif
