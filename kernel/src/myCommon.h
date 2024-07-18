@@ -32,6 +32,13 @@ typedef struct spinlock {
     int holder;
 } spinlock_t;
 
+typedef struct semaphore {
+    spinlock_t lk;
+    const char* name;
+    int value;
+    task_t* wait_list;
+} sem_t;
+
 typedef struct _cpu {
     int lock_counter;
     task_t* current_task;
@@ -117,7 +124,57 @@ void set_task(task_t* task) {
     if (cpu_list[cpu_current()].current_task != NULL) {
         panic("there are two taskes at the same time!");
     }
+    task->status = T_RUNNING;
+    task->next = NULL;
     cpu_list[cpu_current()].current_task = task;
 }
 
+void sem_init(sem_t* sem, const char* name, int value) {
+    spin_init(&sem->lk, name);
+    sem->value = value;
+    sem->name = name;
+    sem->wait_list = NULL;
+}
+void sem_wait(sem_t* sem) {
+    bool sleep = false;
+    spin_lock(&sem->lk);
+    sem->value -= 1;
+    if (sem->value < 0) {
+        sleep = true;
+        task_t* current_task = cpu_list[cpu_current()].current_task;
+        current_task->status = T_SLEEPING;
+        if (sem->wait_list == NULL) {
+            sem->wait_list = current_task;
+        } else {
+            task_t* t = sem->wait_list;
+            while (t->next != NULL) {
+                t = t->next;
+            }
+            t->next = current_task;
+        }
+    } else {
+        sleep = false;
+    }
+    spin_unlock(&sem->lk);
+    if (sleep) {
+        yield();
+    }
+
+}
+void sem_signal(sem_t* sem) {
+    spin_lock(&sem->lk);
+    sem->value += 1;
+    if (sem->wait_list == NULL) {
+        spin_unlock(&sem->lk);
+        return;
+    }
+    task_t* new_task = sem->wait_list;
+    sem->wait_list = new_task->next;
+    spin_unlock(&sem->lk);
+    new_task->status = T_BLOCKED;
+    spin_lock(&task_lk);
+    new_task->next = task_root.next;
+    task_root.next = new_task;
+    spin_unlock(&task_lk);
+}
 #endif

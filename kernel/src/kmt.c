@@ -5,27 +5,25 @@
 //type definition
 
 
-typedef struct _semaphore {
-    int counter;
-    lock_t lk;
-} sem_t;
-
-
 Context* kmt_context_save(Event event, Context* context) {
     //TODO 
     // maybe a enqueue to capsule the task list is more fast.
     task_t* new_task = cpu_move_task();
     new_task->context = context;
-    new_task->status = T_BLOCKED;
-    task_t* before_task = &task_root;
+    if (new_task->status == T_SLEEPING) {
+        //
+    } else {
+        new_task->status = T_BLOCKED;
+        task_t* before_task = &task_root;
 
-    spin_lock(&task_lk);
-    while (before_task->next != NULL) {
-        before_task = before_task->next;
+        spin_lock(&task_lk);
+        while (before_task->next != NULL) {
+            before_task = before_task->next;
+        }
+        before_task->next = new_task;
+        spin_unlock(&task_lk);
     }
-    before_task->next = new_task;
-    spin_unlock(&task_lk);
-
+    
     return NULL;
 }
 
@@ -44,9 +42,14 @@ Context* kmt_schedule(Event event, Context* context) {
         }
     }
     task_root.next = new_task->next;
+    // while (new_task->status == T_SLEEPING) {
+    //     new_task = new_task->next;
+    //     if (new_task == NULL) {
+    //         panic("no unsleep task!");
+    //     }
+    // }
     spin_unlock(&task_lk);
 
-    new_task->status = T_RUNNING;
     set_task(new_task);
     return new_task->context;
 }
