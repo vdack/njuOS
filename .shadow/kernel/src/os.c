@@ -5,7 +5,10 @@
 //local test:
 #ifdef TRACE_F
 void print_current() {
-    while(1)printf("Hello From Cpu#%d\n", cpu_current());
+    while(1){
+        printf("Hello From Cpu#%d\n", cpu_current());
+        yield();
+    }
 }
 
 void print_test() {
@@ -51,7 +54,7 @@ static void os_init() {
 
 static void os_run() {
     TRACE_ENTRY;
-    
+
     task_t* os_task = (task_t*)pmm->alloc(sizeof(task_t));
     os_task->next = NULL;
     os_task->status = T_RUNNING;
