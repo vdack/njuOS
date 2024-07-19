@@ -63,6 +63,7 @@ static void os_run() {
 
     
 #ifdef TRACE_F
+    DEBUG("origin status: %d\n", ienabled());
     print_test();
 #endif
     while (1) {
