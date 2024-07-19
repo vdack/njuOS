@@ -55,16 +55,16 @@ static void os_init() {
 static void os_run() {
     TRACE_ENTRY;
 
-    task_t* os_task = (task_t*)pmm->alloc(sizeof(task_t));
-    os_task->next = NULL;
-    os_task->status = T_RUNNING;
-    os_task->name = "os_run";
-    cpu_list[cpu_current()].current_task = os_task;
+    // task_t* os_task = (task_t*)pmm->alloc(sizeof(task_t));
+    // os_task->next = NULL;
+    // os_task->status = T_RUNNING;
+    // os_task->name = "os_run";
+    // cpu_list[cpu_current()].current_task = os_task;
 
     
 #ifdef TRACE_F
-    DEBUG("origin status: %d\n", ienabled());
-    // print_test();
+    // DEBUG("origin status: %d\n", ienabled());
+    print_test();
 #endif
     while (1) {
         yield();

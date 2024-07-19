@@ -119,6 +119,9 @@ Context* kmt_context_save(Event event, Context* context) {
     TRACE_ENTRY;
     // maybe a enqueue to capsule the task list is more fast.
     task_t* new_task = cpu_move_task();
+    if (new_task == NULL) {
+        return NULL;
+    }
     new_task->context = context;
     if (new_task->status == T_SLEEPING || new_task->status == T_DEAD) {
         DEBUG("skip current task!");
