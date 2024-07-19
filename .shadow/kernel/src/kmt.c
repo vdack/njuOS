@@ -113,6 +113,7 @@ static void kmt_sem_signal(sem_t* sem) {
 
 Context* kmt_context_save(Event event, Context* context) {
     //TODO 
+    TRACE_ENTRY;
     // maybe a enqueue to capsule the task list is more fast.
     task_t* new_task = cpu_move_task();
     new_task->context = context;
@@ -129,7 +130,7 @@ Context* kmt_context_save(Event event, Context* context) {
         before_task->next = new_task;
         kmt_spin_unlock(&task_lk);
     }
-    
+    TRACE_EXIT;
     return NULL;
 }
 
@@ -165,8 +166,8 @@ Context* kmt_schedule(Event event, Context* context) {
 static void kmt_init() {
     //TODO 
 
-    os->on_irq(INT_MIN, EVENT_NULL, kmt_context_save);
-    os->on_irq(INT_MAX, EVENT_NULL, kmt_schedule);
+    os->on_irq(0, EVENT_NULL, kmt_context_save);
+    os->on_irq(100, EVENT_NULL, kmt_schedule);
     
     
 }
