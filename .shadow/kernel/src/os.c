@@ -5,7 +5,7 @@
 //local test:
 #ifdef TRACE_F
 void print_current() {
-    printf("Hello From Cpu#%d\n", cpu_current());
+    while(1)printf("Hello From Cpu#%d\n", cpu_current());
 }
 
 void print_test() {
