@@ -51,6 +51,7 @@ static void os_init() {
 
 static void os_run() {
     TRACE_ENTRY;
+    
     task_t* os_task = (task_t*)pmm->alloc(sizeof(task_t));
     os_task->next = NULL;
     os_task->status = T_RUNNING;
