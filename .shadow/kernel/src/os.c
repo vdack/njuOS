@@ -51,11 +51,10 @@ static void os_init() {
 
 static void os_run() {
     
-    
-    while (1) {
 #ifdef TRACE_F
-        print_test();
+    print_test();
 #endif
+    while (1) {
         yield();
     } ;
 }
@@ -79,8 +78,6 @@ static void os_on_irq (int seq, int event, handler_t handler) {
     new_irq->next = before_irq->next;
     before_irq->next = new_irq;
     kmt->spin_unlock(&lk_irq);
-
-    DEBUG("enroot next: %p \n",enroot.next);
 }
 static Context* os_trap (Event ev, Context *ctx) {
     Context *next = NULL;
