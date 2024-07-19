@@ -28,6 +28,7 @@ static void os_init() {
         cpu_list[i].i_status = true;
     }
     task_root.next = NULL;
+
     kmt->spin_init(&task_lk, "task");
 
     pmm->init();
@@ -36,9 +37,9 @@ static void os_init() {
 }
 
 static void os_run() {
-    // for (const char *s = "Hello World from CPU #*\n"; *s; s++) {
-    //     putch(*s == '*' ? '0' + cpu_current() : *s);
-    // }
+    for (const char *s = "Hello World from CPU #*\n"; *s; s++) {
+        putch(*s == '*' ? '0' + cpu_current() : *s);
+    }
     while (1) {
         yield();
     } ;
