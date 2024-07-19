@@ -50,6 +50,7 @@ static void os_init() {
 }
 
 static void os_run() {
+    TRACE_ENTRY;
     task_t* os_task = (task_t*)pmm->alloc(sizeof(task_t));
     os_task->next = NULL;
     os_task->status = T_RUNNING;
@@ -63,6 +64,7 @@ static void os_run() {
     while (1) {
         yield();
     } ;
+    TRACE_EXIT;
 }
 
 static void os_on_irq (int seq, int event, handler_t handler) {
