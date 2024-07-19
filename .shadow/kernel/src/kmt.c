@@ -134,6 +134,7 @@ Context* kmt_context_save(Event event, Context* context) {
 }
 
 Context* kmt_schedule(Event event, Context* context) {
+    TRACE_ENTRY;
     task_t* new_task = NULL;
 
     kmt_spin_lock(&task_lk);
@@ -157,6 +158,7 @@ Context* kmt_schedule(Event event, Context* context) {
     kmt_spin_unlock(&task_lk);
 
     set_task(new_task);
+    TRACE_EXIT;
     return new_task->context;
 }
 
@@ -171,6 +173,7 @@ static void kmt_init() {
 
 static int kmt_create (task_t* task, const char* name, void (*entry)(void* arg), void* arg) {
     //TODO
+    TRACE_ENTRY;
     task->stack = (uint8_t*)pmm->alloc(STACK_SIZE);
     Area area = RANGE(task->stack, (void*)task->stack + STACK_SIZE);
     task->context = kcontext(area, entry, arg);
@@ -187,13 +190,16 @@ static int kmt_create (task_t* task, const char* name, void (*entry)(void* arg),
     }
     before_task->next = task;
     kmt_spin_unlock(&task_lk);
+    TRACE_EXIT;
     return 0;
 }
 
 static void kmt_teardown (task_t* task) {
     //TODO
+    TRACE_ENTRY;
     pmm->free(task->stack);
     task->status = T_DEAD;
+    TRACE_EXIT;
 }
 
 MODULE_DEF(kmt) = {

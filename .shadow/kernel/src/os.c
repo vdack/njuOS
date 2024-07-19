@@ -54,7 +54,7 @@ static void os_on_irq (int seq, int event, handler_t handler) {
     kmt->spin_lock(&lk_irq);
     while (before_irq->next != NULL) {
         enroll_t* next_irq = before_irq->next;
-        if (new_irq->seq <= next_irq->seq) {
+        if (new_irq->seq >= next_irq->seq) {
             break;
         }
         before_irq = next_irq;
