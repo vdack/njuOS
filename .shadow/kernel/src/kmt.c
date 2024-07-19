@@ -118,7 +118,7 @@ Context* kmt_context_save(Event event, Context* context) {
     task_t* new_task = cpu_move_task();
     new_task->context = context;
     if (new_task->status == T_SLEEPING || new_task->status == T_DEAD) {
-        //
+        DEBUG("skip current task!");
     } else {
         new_task->status = T_BLOCKED;
         task_t* before_task = &task_root;
