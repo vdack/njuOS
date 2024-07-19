@@ -1,6 +1,22 @@
 #ifndef _OS_H_
 #define _OS_H_
 #include <common.h>
+
+//local test:
+#ifdef TRACE_F
+void print_current() {
+    printf("Hello From Cpu#%d\n", cpu_current());
+}
+
+void print_test() {
+    for(int i = 0; i < cpu_count(); i += 1) {
+        task_t* t = (task_t*) pmm->alloc(sizeof(task_t));
+        kmt->create(t, "HELLO", print_current, NULL);
+    }
+}
+#endif
+
+
 cpu_t cpu_list[CPU_MAX];
 task_t task_root;
 spinlock_t task_lk;
@@ -30,6 +46,7 @@ static void os_init() {
     pmm->init();
     kmt->init();
 
+
 }
 
 static void os_run() {
@@ -37,9 +54,7 @@ static void os_run() {
     
     while (1) {
 #ifdef TRACE_F
-        for (const char *s = "Hello World from CPU #*\n"; *s; s++) {
-            putch(*s == '*' ? '0' + cpu_current() : *s);
-        }
+        print_test();
 #endif
         yield();
     } ;
