@@ -7,7 +7,7 @@
 void print_current() {
     while(1){
         printf("Hello From Cpu#%d\n", cpu_current());
-        yield();
+        // yield();
     }
 }
 
