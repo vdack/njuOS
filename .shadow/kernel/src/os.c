@@ -36,9 +36,11 @@ static void os_run() {
     
     
     while (1) {
+#ifdef TRACE_F
         for (const char *s = "Hello World from CPU #*\n"; *s; s++) {
             putch(*s == '*' ? '0' + cpu_current() : *s);
         }
+#endif
         yield();
     } ;
 }
