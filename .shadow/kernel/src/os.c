@@ -64,7 +64,7 @@ static void os_run() {
     
 #ifdef TRACE_F
     DEBUG("origin status: %d\n", ienabled());
-    print_test();
+    // print_test();
 #endif
     while (1) {
         yield();
