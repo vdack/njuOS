@@ -26,10 +26,11 @@ static void kmt_spin_init(spinlock_t* lk, const char* name) {
     lk->holder = -1;
 }
 static void kmt_spin_lock(spinlock_t* lk) {
+    bool istatus = ienabled();
     while(1){
-        iset(ienabled());
+        iset(false);
         if (atomic_xchg(&lk->flag, MY_LOCKED) == MY_LOCKED) {
-            iset(true);
+            iset(istatus);
         } else {
             break;
         }
