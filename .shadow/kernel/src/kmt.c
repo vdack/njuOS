@@ -27,7 +27,7 @@ static void kmt_spin_init(spinlock_t* lk, const char* name) {
 }
 static void kmt_spin_lock(spinlock_t* lk) {
     while(1){
-        iset(false);
+        iset(ienabled());
         if (atomic_xchg(&lk->flag, MY_LOCKED) == MY_LOCKED) {
             iset(true);
         } else {
@@ -51,7 +51,8 @@ static void kmt_spin_unlock(spinlock_t* lk) {
     int current = cpu_current();
     
     int res = atomic_xchg(&lk->flag, MY_UNLOCKED);
-    panic_on(res == MY_UNLOCKED || lk->holder != current, "Error when unlock a spinlock.\n");
+    panic_on(res == MY_UNLOCKED, "Error when unlock an unlocked spinlock.\n");
+    panic_on(lk->holder != current, "Not the same CPU!\n");
     lk->holder = -1;
 
     cpu_list[current].lock_counter -= 1;
