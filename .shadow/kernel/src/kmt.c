@@ -1,15 +1,9 @@
-
-
 #ifndef _KMT_H_
 #define _KMT_H_
 #include <common.h>
 #include <limits.h>
 
-
-
-//type definition
-
-
+//helper function
 static inline task_t* cpu_move_task() {
     task_t* temp = cpu_list[cpu_current()].current_task;
     cpu_list[cpu_current()].current_task = NULL;
@@ -23,6 +17,7 @@ static inline void set_task(task_t* task) {
     task->next = NULL;
     cpu_list[cpu_current()].current_task = task;
 }
+
 
 static void kmt_spin_init(spinlock_t* lk, const char* name) {
     lk->flag = MY_UNLOCKED;

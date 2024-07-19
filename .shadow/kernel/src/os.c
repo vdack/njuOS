@@ -1,5 +1,3 @@
-
-
 #ifndef _OS_H_
 #define _OS_H_
 #include <common.h>
@@ -13,10 +11,8 @@ typedef struct _enroll {
     struct _enroll* next;
 } enroll_t;
 
-
 enroll_t enroot; 
 spinlock_t lk_irq;
-
 
 static void os_init() {
 
@@ -37,9 +33,9 @@ static void os_init() {
 }
 
 static void os_run() {
-    for (const char *s = "Hello World from CPU #*\n"; *s; s++) {
-        putch(*s == '*' ? '0' + cpu_current() : *s);
-    }
+    // for (const char *s = "Hello World from CPU #*\n"; *s; s++) {
+    //     putch(*s == '*' ? '0' + cpu_current() : *s);
+    // }
     while (1) {
         yield();
     } ;
@@ -50,6 +46,7 @@ static void os_on_irq (int seq, int event, handler_t handler) {
     new_irq->seq = seq;
     new_irq->event = event;
     new_irq->handler = handler;
+    new_irq->next = NULL;
     
     enroll_t* before_irq = &enroot;
     kmt->spin_lock(&lk_irq);
