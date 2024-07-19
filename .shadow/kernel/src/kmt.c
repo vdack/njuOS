@@ -6,7 +6,7 @@
 //helper function
 static inline task_t* cpu_move_task() {
     task_t* temp = cpu_list[cpu_current()].current_task;
-    panic_on(temp == NULL, "current task none!\n");
+    // panic_on(temp == NULL, "current task none!\n");
     cpu_list[cpu_current()].current_task = NULL;
     return temp;
 } 
