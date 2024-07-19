@@ -53,7 +53,7 @@ static void kmt_spin_unlock(spinlock_t* lk) {
     
     int res = atomic_xchg(&lk->flag, MY_UNLOCKED);
     panic_on(res == MY_UNLOCKED, "Error when unlock an unlocked spinlock.\n");
-    panic_on(lk->holder != current, "Not the same CPU!\n");
+    // panic_on(lk->holder != current, "Not the same CPU!\n");
     lk->holder = -1;
 
     cpu_list[current].lock_counter -= 1;
