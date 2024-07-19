@@ -1,7 +1,7 @@
 #ifndef _COMMON_H_
 #define _COMMON_H_
 
-#define TRACE_F
+// #define TRACE_F
 
 #ifdef TRACE_F
     #define TRACE_ENTRY printf("[trace] %s:entry\n", __func__)
@@ -10,7 +10,7 @@
 #else
     #define TRACE_ENTRY ((void)0)
     #define TRACE_EXIT ((void)0)
-    #define DEBUG() ;
+    #define DEBUG(...) ;
 #endif
 
 
