@@ -1,7 +1,7 @@
 #ifndef _COMMON_H_
 #define _COMMON_H_
 
-#define TRACE_F
+// #define TRACE_F
 
 #ifdef TRACE_F
     #define TRACE_ENTRY printf("[trace] %s:entry\n", __func__)
