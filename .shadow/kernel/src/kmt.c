@@ -73,13 +73,9 @@ static void kmt_spin_init(spinlock_t* lk, const char* name) {
 }
 static void kmt_spin_lock(spinlock_t* lk) {
     bool istatus = ienabled();
-    while(1){
-        iset(false);
-        if (atomic_xchg(&lk->flag, MY_LOCKED) == MY_LOCKED) {
-            iset(istatus);
-        } else {
-            break;
-        }
+    iset(false);
+    while(atomic_xchg(&lk->flag, MY_LOCKED) == MY_LOCKED){
+        //
     }
 
     int current = cpu_current();
@@ -89,8 +85,7 @@ static void kmt_spin_lock(spinlock_t* lk) {
     cpu_list[current].lock_counter += 1;
     if (cpu_list[current].lock_counter == 1) {
         // cpu acquire a lock for the first time.
-        cpu_list[current].i_status = ienabled();
-        iset(false);
+        cpu_list[current].i_status = istatus;
     }
     return;
 }
