@@ -10,12 +10,23 @@ void print_current() {
         yield();
     }
 }
+void tea() {
+    while (1) {
+        printf("TEA\n");
+        yield();
+    }
+}
 
 void print_test() {
     for(int i = 0; i < cpu_count(); i += 1) {
         task_t* t = (task_t*) pmm->alloc(sizeof(task_t));
         kmt->create(t, "HELLO", print_current, NULL);
     }
+}
+
+void print_tea() {
+    task_t* t = (task_t*) pmm->alloc(sizeof(task_t));
+    kmt->create(t, "TEA", tea, NULL);
 }
 
 #endif
@@ -63,6 +74,7 @@ static void os_run() {
 #ifdef TRACE_F
     // DEBUG("origin status: %d\n", ienabled());
     print_test();
+    print_tea();
 #endif
     iset(true);
     while (1) {
