@@ -151,20 +151,20 @@ Context* kmt_schedule(Event event, Context* context) {
         // panic("no task!");
         kmt_spin_unlock(&task_lk);
     }
-    while(new_task->status == T_DEAD) {
-        kmt_spin_lock(&task_lk);
-        new_task = new_task->next;
-        if (new_task == NULL) {
-            task_root.next = NULL;
-            kmt_spin_unlock(&task_lk);
-            while(new_task == NULL) {
-                kmt_spin_lock(&task_lk);
-                new_task = task_root.next;
-                // panic("no task!");
-                kmt_spin_unlock(&task_lk);
-            }
-        }
-    }
+    // while(new_task->status == T_DEAD) {
+    //     kmt_spin_lock(&task_lk);
+    //     new_task = new_task->next;
+    //     if (new_task == NULL) {
+    //         task_root.next = NULL;
+    //         kmt_spin_unlock(&task_lk);
+    //         while(new_task == NULL) {
+    //             kmt_spin_lock(&task_lk);
+    //             new_task = task_root.next;
+    //             // panic("no task!");
+    //             kmt_spin_unlock(&task_lk);
+    //         }
+    //     }
+    // }
     task_root.next = new_task->next;
     // while (new_task->status == T_SLEEPING) {
     //     new_task = new_task->next;
