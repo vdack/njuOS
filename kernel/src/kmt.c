@@ -15,9 +15,55 @@ static inline void set_task(task_t* task) {
         panic("there are two taskes at the same time!");
     }
     task->status = T_RUNNING;
-    task->next = NULL;
     cpu_list[cpu_current()].current_task = task;
 }
+
+void waitlist_init(waitlist_t* wl, const char* name) {
+    wl->head = NULL;
+    wl->tail = NULL;
+    kmt->spin_init(&wl->lk, name);
+}
+
+void waitlist_add(waitlist_t* wl,task_t* t) {
+    kmt->spin_lock(&wl->lk);
+    if (wl->head == NULL) {
+        wl->head = t;
+        kmt->spin_unlock(&wl->lk);
+        return;
+    }
+    if (wl->tail == NULL) {
+        wl->head->next = t;
+        wl->tail = t;
+        kmt->spin_unlock(&wl->lk);
+        return;
+    }
+    wl->tail->next = t;
+    wl->tail = t;
+    kmt->spin_unlock(&wl->lk);
+}
+
+task_t* waitlist_get(waitlist_t* wl) {
+    kmt->spin_lock(&wl->lk);
+    if (wl->head == NULL) {
+        kmt->spin_unlock(&wl->lk);
+        return NULL;
+    }
+    task_t* t = wl->head;
+    if (wl->tail == NULL) {
+        wl->head = NULL;
+        kmt->spin_unlock(&wl->lk);
+        t->next = NULL;
+        return t;
+    }
+    wl->head = t->next;
+    if (wl->head == wl->tail) {
+        wl->tail = NULL;
+    }
+    kmt->spin_unlock(&wl->lk);
+    t->next = NULL;
+    return t;
+}
+
 
 
 static void kmt_spin_init(spinlock_t* lk, const char* name) {
@@ -68,7 +114,7 @@ static void kmt_sem_init(sem_t* sem, const char* name, int value) {
     kmt_spin_init(&sem->lk, name);
     sem->value = value;
     sem->name = name;
-    sem->wait_list = NULL;
+    waitlist_init(&sem->sleep_list, name);
 }
 static void kmt_sem_wait(sem_t* sem) {
     bool sleep = false;
@@ -78,15 +124,7 @@ static void kmt_sem_wait(sem_t* sem) {
         sleep = true;
         task_t* current_task = cpu_list[cpu_current()].current_task;
         current_task->status = T_SLEEPING;
-        if (sem->wait_list == NULL) {
-            sem->wait_list = current_task;
-        } else {
-            task_t* t = sem->wait_list;
-            while (t->next != NULL) {
-                t = t->next;
-            }
-            t->next = current_task;
-        }
+        waitlist_add(&sem->sleep_list, current_task);
     } else {
         sleep = false;
     }
@@ -99,18 +137,16 @@ static void kmt_sem_wait(sem_t* sem) {
 static void kmt_sem_signal(sem_t* sem) {
     kmt_spin_lock(&sem->lk);
     sem->value += 1;
-    if (sem->wait_list == NULL) {
+    task_t* awake_task = waitlist_get(&sem->sleep_list);
+    if (awake_task == NULL) {
         kmt_spin_unlock(&sem->lk);
         return;
     }
-    task_t* new_task = sem->wait_list;
-    sem->wait_list = new_task->next;
+    
+    awake_task->status = T_SLEEPING;
+    waitlist_add(&task_list, awake_task);
     kmt_spin_unlock(&sem->lk);
-    new_task->status = T_BLOCKED;
-    kmt_spin_lock(&task_lk);
-    new_task->next = task_root.next;
-    task_root.next = new_task;
-    kmt_spin_unlock(&task_lk);
+    
 }
 
 
@@ -127,14 +163,7 @@ Context* kmt_context_save(Event event, Context* context) {
         DEBUG("skip current task!");
     } else {
         new_task->status = T_BLOCKED;
-        task_t* before_task = &task_root;
-
-        kmt_spin_lock(&task_lk);
-        while (before_task->next != NULL) {
-            before_task = before_task->next;
-        }
-        before_task->next = new_task;
-        kmt_spin_unlock(&task_lk);
+        waitlist_add(&task_list, new_task);
     }
     TRACE_EXIT;
     return NULL;
@@ -143,36 +172,39 @@ Context* kmt_context_save(Event event, Context* context) {
 Context* kmt_schedule(Event event, Context* context) {
     TRACE_ENTRY;
     task_t* new_task = NULL;
-    kmt_spin_lock(&task_lk);
-    new_task = task_root.next;
-    
     while (new_task == NULL) {
-        // panic("no task!");
-        kmt_spin_unlock(&task_lk);
-        kmt_spin_lock(&task_lk);
-        new_task = task_root.next;
+        new_task = waitlist_get(&task_list);
     }
-    while(new_task->status == T_DEAD) {
-        new_task = new_task->next;
-        if (new_task == NULL) {
-            task_root.next = NULL;
-            while(new_task == NULL) {
-                kmt_spin_unlock(&task_lk);
-                kmt_spin_lock(&task_lk);
-                new_task = task_root.next;
-                // panic("no task!");
-            }
-            
-        }
-    }
-    task_root.next = new_task->next;
-    // while (new_task->status == T_SLEEPING) {
+    // kmt_spin_lock(&task_lk);
+    // new_task = task_root.next;
+    
+    // while (new_task == NULL) {
+    //     // panic("no task!");
+    //     kmt_spin_unlock(&task_lk);
+    //     kmt_spin_lock(&task_lk);
+    //     new_task = task_root.next;
+    // }
+    // while(new_task->status == T_DEAD) {
     //     new_task = new_task->next;
     //     if (new_task == NULL) {
-    //         panic("no unsleep task!");
+    //         task_root.next = NULL;
+    //         while(new_task == NULL) {
+    //             kmt_spin_unlock(&task_lk);
+    //             kmt_spin_lock(&task_lk);
+    //             new_task = task_root.next;
+    //             // panic("no task!");
+    //         }
+            
     //     }
     // }
-    kmt_spin_unlock(&task_lk);
+    // task_root.next = new_task->next;
+    // // while (new_task->status == T_SLEEPING) {
+    // //     new_task = new_task->next;
+    // //     if (new_task == NULL) {
+    // //         panic("no unsleep task!");
+    // //     }
+    // // }
+    // kmt_spin_unlock(&task_lk);
 
     set_task(new_task);
     TRACE_EXIT;
@@ -181,6 +213,7 @@ Context* kmt_schedule(Event event, Context* context) {
 
 static void kmt_init() {
     //TODO 
+    waitlist_init(&task_list, "task_list");
 
     os->on_irq(0, EVENT_NULL, kmt_context_save);
     os->on_irq(100, EVENT_NULL, kmt_schedule);
@@ -200,13 +233,14 @@ static int kmt_create (task_t* task, const char* name, void (*entry)(void* arg),
     task->next = NULL;
     task->status = T_CREATE;
 
-    kmt_spin_lock(&task_lk);
-    task_t* before_task = &task_root;
-    while (before_task->next != NULL) {
-        before_task = before_task->next;
-    }
-    before_task->next = task;
-    kmt_spin_unlock(&task_lk);
+    // kmt_spin_lock(&task_lk);
+    // task_t* before_task = &task_root;
+    // while (before_task->next != NULL) {
+    //     before_task = before_task->next;
+    // }
+    // before_task->next = task;
+    // kmt_spin_unlock(&task_lk);
+    waitlist_add(&task_list, task);
     TRACE_EXIT;
     return 0;
 }

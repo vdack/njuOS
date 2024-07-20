@@ -10,6 +10,12 @@ void print_current() {
         yield();
     }
 }
+void tea() {
+    while (1) {
+        printf("TEA\n");
+        yield();
+    }
+}
 
 void print_test() {
     for(int i = 0; i < cpu_count(); i += 1) {
@@ -17,12 +23,17 @@ void print_test() {
         kmt->create(t, "HELLO", print_current, NULL);
     }
 }
+
+void print_tea() {
+    task_t* t = (task_t*) pmm->alloc(sizeof(task_t));
+    kmt->create(t, "TEA", tea, NULL);
+}
+
 #endif
 
 
 cpu_t cpu_list[CPU_MAX];
-task_t task_root;
-spinlock_t task_lk;
+waitlist_t task_list;
 typedef struct _enroll {
     int event;
     int seq;
@@ -42,10 +53,8 @@ static void os_init() {
         cpu_list[i].lock_counter = 0;
         cpu_list[i].i_status = true;
     }
-    task_root.next = NULL;
-
-    kmt->spin_init(&task_lk, "task");
-
+    
+    
     pmm->init();
     kmt->init();
 
@@ -65,6 +74,7 @@ static void os_run() {
 #ifdef TRACE_F
     // DEBUG("origin status: %d\n", ienabled());
     print_test();
+    print_tea();
 #endif
     iset(true);
     while (1) {
