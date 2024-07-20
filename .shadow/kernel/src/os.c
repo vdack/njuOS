@@ -66,7 +66,7 @@ static void os_run() {
     // DEBUG("origin status: %d\n", ienabled());
     print_test();
 #endif
-    // iset(true);
+    iset(true);
     while (1) {
         yield();
     } ;
