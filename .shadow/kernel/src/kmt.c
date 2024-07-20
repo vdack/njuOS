@@ -141,10 +141,10 @@ static void kmt_sem_signal(sem_t* sem) {
     if (awake_task == NULL) {
         return;
     }
-    kmt_spin_unlock(&sem->lk);
-
+    
     awake_task->status = T_SLEEPING;
     waitlist_add(&task_list, awake_task);
+    kmt_spin_unlock(&sem->lk);
     
 }
 
