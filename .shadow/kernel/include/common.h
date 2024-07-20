@@ -43,12 +43,11 @@ typedef struct spinlock {
     int holder;
 } spinlock_t;
 
-typedef struct semaphore {
+typedef struct _waitlist {
+    task_t* head;
+    task_t* tail;
     spinlock_t lk;
-    const char* name;
-    int value;
-    task_t* wait_list;
-} sem_t;
+} waitlist_t;
 
 typedef struct _cpu {
     int lock_counter;
@@ -56,10 +55,16 @@ typedef struct _cpu {
     int i_status;
 } cpu_t;
 
+typedef struct semaphore {
+    spinlock_t lk;
+    const char* name;
+    int value;
+    waitlist_t sleep_list;
+} sem_t;
 
 extern cpu_t cpu_list[CPU_MAX];
-extern task_t task_root;
-extern spinlock_t task_lk;
+extern waitlist_t task_list;
+
 
 
 #endif

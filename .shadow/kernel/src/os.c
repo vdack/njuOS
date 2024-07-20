@@ -21,8 +21,7 @@ void print_test() {
 
 
 cpu_t cpu_list[CPU_MAX];
-task_t task_root;
-spinlock_t task_lk;
+waitlist_t task_list;
 typedef struct _enroll {
     int event;
     int seq;
@@ -42,10 +41,8 @@ static void os_init() {
         cpu_list[i].lock_counter = 0;
         cpu_list[i].i_status = true;
     }
-    task_root.next = NULL;
-
-    kmt->spin_init(&task_lk, "task");
-
+    
+    
     pmm->init();
     kmt->init();
 
