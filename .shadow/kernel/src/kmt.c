@@ -137,15 +137,16 @@ static void kmt_sem_wait(sem_t* sem) {
 static void kmt_sem_signal(sem_t* sem) {
     kmt_spin_lock(&sem->lk);
     sem->value += 1;
+    
     task_t* awake_task = waitlist_get(&sem->sleep_list);
     if (awake_task == NULL) {
         kmt_spin_unlock(&sem->lk);
         return;
     }
-    
-    awake_task->status = T_SLEEPING;
-    waitlist_add(&task_list, awake_task);
     kmt_spin_unlock(&sem->lk);
+    awake_task->status = T_BLOCKED;
+    waitlist_add(&task_list, awake_task);
+    
     
 }
 

@@ -54,11 +54,8 @@ static void os_init() {
         cpu_list[i].i_status = true;
     }
     
-    
     pmm->init();
     kmt->init();
-
-
 }
 
 static void os_run() {
@@ -78,7 +75,7 @@ static void os_run() {
 #endif
     iset(true);
     while (1) {
-        // yield();
+        yield();
     } ;
     TRACE_EXIT;
 }
