@@ -78,7 +78,7 @@ static void os_run() {
 #endif
     iset(true);
     while (1) {
-        yield();
+        // yield();
     } ;
     TRACE_EXIT;
 }
