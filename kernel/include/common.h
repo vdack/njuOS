@@ -40,7 +40,6 @@ typedef struct task{
 typedef struct spinlock {
     int flag;
     const char* name;
-    int holder;
 } spinlock_t;
 
 typedef struct _waitlist {

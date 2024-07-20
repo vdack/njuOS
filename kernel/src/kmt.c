@@ -69,28 +69,20 @@ task_t* waitlist_get(waitlist_t* wl) {
 static void kmt_spin_init(spinlock_t* lk, const char* name) {
     lk->flag = MY_UNLOCKED;
     lk->name = name;
-    lk->holder = -1;
 }
 static void kmt_spin_lock(spinlock_t* lk) {
     bool istatus = ienabled();
-    while(1){
-        iset(false);
-        if (atomic_xchg(&lk->flag, MY_LOCKED) == MY_LOCKED) {
-            iset(istatus);
-        } else {
-            break;
-        }
+    iset(false);
+    while(atomic_xchg(&lk->flag, MY_LOCKED) == MY_LOCKED){
+        //
     }
 
     int current = cpu_current();
-    
-    lk->holder = current;
 
     cpu_list[current].lock_counter += 1;
     if (cpu_list[current].lock_counter == 1) {
         // cpu acquire a lock for the first time.
-        cpu_list[current].i_status = ienabled();
-        iset(false);
+        cpu_list[current].i_status = istatus;
     }
     return;
 }
@@ -99,8 +91,6 @@ static void kmt_spin_unlock(spinlock_t* lk) {
     
     int res = atomic_xchg(&lk->flag, MY_UNLOCKED);
     panic_on(res == MY_UNLOCKED, "Error when unlock an unlocked spinlock.\n");
-    // panic_on(lk->holder != current, "Not the same CPU!\n");
-    lk->holder = -1;
 
     cpu_list[current].lock_counter -= 1;
     if (cpu_list[current].lock_counter == 0) {
@@ -137,15 +127,16 @@ static void kmt_sem_wait(sem_t* sem) {
 static void kmt_sem_signal(sem_t* sem) {
     kmt_spin_lock(&sem->lk);
     sem->value += 1;
+    
     task_t* awake_task = waitlist_get(&sem->sleep_list);
     if (awake_task == NULL) {
         kmt_spin_unlock(&sem->lk);
         return;
     }
-    
-    awake_task->status = T_SLEEPING;
-    waitlist_add(&task_list, awake_task);
     kmt_spin_unlock(&sem->lk);
+    awake_task->status = T_BLOCKED;
+    waitlist_add(&task_list, awake_task);
+    
     
 }
 

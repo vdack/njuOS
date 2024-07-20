@@ -54,11 +54,8 @@ static void os_init() {
         cpu_list[i].i_status = true;
     }
     
-    
     pmm->init();
     kmt->init();
-
-
 }
 
 static void os_run() {
@@ -78,7 +75,7 @@ static void os_run() {
 #endif
     iset(true);
     while (1) {
-        yield();
+        // yield();
     } ;
     TRACE_EXIT;
 }
@@ -105,11 +102,8 @@ static void os_on_irq (int seq, int event, handler_t handler) {
 }
 static Context* os_trap (Event ev, Context *ctx) {
     Context *next = NULL;
-
     kmt->spin_lock(&lk_irq);
-
     enroll_t* h = enroot.next;
-
     while (h != NULL) {
         if (h->event == EVENT_NULL || h->event == ev.event) {
             Context* r = h->handler(ev, ctx);
@@ -118,20 +112,8 @@ static Context* os_trap (Event ev, Context *ctx) {
         }
         h = h->next;
     }
-
     kmt->spin_unlock(&lk_irq);
-
-    /*
-    for (auto &h: handlers_sorted_by_seq) {
-        if (h.event == EVENT_NULL || h.event == ev.event) {
-            Context *r = h.handler(ev, ctx);
-            panic_on(r && next, "return to multiple contexts");
-            if (r) next = r;
-        }
-    }
-    */
     panic_on(!next, "return to NULL context");
-    // panic_on(sane_context(next), "return to invalid context");
     return next;
 }
 
