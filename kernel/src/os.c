@@ -1,8 +1,25 @@
-
-
 #ifndef _OS_H_
 #define _OS_H_
 #include <common.h>
+
+//local test:
+#ifdef TRACE_F
+void print_current() {
+    while(1){
+        printf("Hello From Cpu#%d\n", cpu_current());
+        yield();
+    }
+}
+
+void print_test() {
+    for(int i = 0; i < cpu_count(); i += 1) {
+        task_t* t = (task_t*) pmm->alloc(sizeof(task_t));
+        kmt->create(t, "HELLO", print_current, NULL);
+    }
+}
+#endif
+
+
 cpu_t cpu_list[CPU_MAX];
 task_t task_root;
 spinlock_t task_lk;
@@ -13,10 +30,8 @@ typedef struct _enroll {
     struct _enroll* next;
 } enroll_t;
 
-
 enroll_t enroot; 
 spinlock_t lk_irq;
-
 
 static void os_init() {
 
@@ -28,20 +43,34 @@ static void os_init() {
         cpu_list[i].i_status = true;
     }
     task_root.next = NULL;
+
     kmt->spin_init(&task_lk, "task");
 
     pmm->init();
     kmt->init();
 
+
 }
 
 static void os_run() {
-    // for (const char *s = "Hello World from CPU #*\n"; *s; s++) {
-    //     putch(*s == '*' ? '0' + cpu_current() : *s);
-    // }
+    TRACE_ENTRY;
+
+    // task_t* os_task = (task_t*)pmm->alloc(sizeof(task_t));
+    // os_task->next = NULL;
+    // os_task->status = T_RUNNING;
+    // os_task->name = "os_run";
+    // cpu_list[cpu_current()].current_task = os_task;
+
+    
+#ifdef TRACE_F
+    // DEBUG("origin status: %d\n", ienabled());
+    print_test();
+#endif
+    iset(true);
     while (1) {
         yield();
     } ;
+    TRACE_EXIT;
 }
 
 static void os_on_irq (int seq, int event, handler_t handler) {
@@ -49,12 +78,13 @@ static void os_on_irq (int seq, int event, handler_t handler) {
     new_irq->seq = seq;
     new_irq->event = event;
     new_irq->handler = handler;
+    new_irq->next = NULL;
     
     enroll_t* before_irq = &enroot;
     kmt->spin_lock(&lk_irq);
     while (before_irq->next != NULL) {
         enroll_t* next_irq = before_irq->next;
-        if (new_irq->seq >= next_irq->seq) {
+        if (new_irq->seq <= next_irq->seq) {
             break;
         }
         before_irq = next_irq;

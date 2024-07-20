@@ -1,17 +1,12 @@
-
-
 #ifndef _KMT_H_
 #define _KMT_H_
 #include <common.h>
 #include <limits.h>
 
-
-
-//type definition
-
-
+//helper function
 static inline task_t* cpu_move_task() {
     task_t* temp = cpu_list[cpu_current()].current_task;
+    // panic_on(temp == NULL, "current task none!\n");
     cpu_list[cpu_current()].current_task = NULL;
     return temp;
 } 
@@ -24,16 +19,18 @@ static inline void set_task(task_t* task) {
     cpu_list[cpu_current()].current_task = task;
 }
 
+
 static void kmt_spin_init(spinlock_t* lk, const char* name) {
     lk->flag = MY_UNLOCKED;
     lk->name = name;
     lk->holder = -1;
 }
 static void kmt_spin_lock(spinlock_t* lk) {
+    bool istatus = ienabled();
     while(1){
         iset(false);
         if (atomic_xchg(&lk->flag, MY_LOCKED) == MY_LOCKED) {
-            iset(true);
+            iset(istatus);
         } else {
             break;
         }
@@ -55,7 +52,8 @@ static void kmt_spin_unlock(spinlock_t* lk) {
     int current = cpu_current();
     
     int res = atomic_xchg(&lk->flag, MY_UNLOCKED);
-    panic_on(res == MY_UNLOCKED || lk->holder != current, "Error when unlock a spinlock.\n");
+    panic_on(res == MY_UNLOCKED, "Error when unlock an unlocked spinlock.\n");
+    // panic_on(lk->holder != current, "Not the same CPU!\n");
     lk->holder = -1;
 
     cpu_list[current].lock_counter -= 1;
@@ -118,11 +116,15 @@ static void kmt_sem_signal(sem_t* sem) {
 
 Context* kmt_context_save(Event event, Context* context) {
     //TODO 
+    TRACE_ENTRY;
     // maybe a enqueue to capsule the task list is more fast.
     task_t* new_task = cpu_move_task();
+    if (new_task == NULL) {
+        return NULL;
+    }
     new_task->context = context;
     if (new_task->status == T_SLEEPING || new_task->status == T_DEAD) {
-        //
+        DEBUG("skip current task!");
     } else {
         new_task->status = T_BLOCKED;
         task_t* before_task = &task_root;
@@ -134,22 +136,33 @@ Context* kmt_context_save(Event event, Context* context) {
         before_task->next = new_task;
         kmt_spin_unlock(&task_lk);
     }
-    
+    TRACE_EXIT;
     return NULL;
 }
 
 Context* kmt_schedule(Event event, Context* context) {
+    TRACE_ENTRY;
     task_t* new_task = NULL;
-
     kmt_spin_lock(&task_lk);
     new_task = task_root.next;
-    if (new_task == NULL) {
-        panic("no task!");
+    
+    while (new_task == NULL) {
+        // panic("no task!");
+        kmt_spin_unlock(&task_lk);
+        kmt_spin_lock(&task_lk);
+        new_task = task_root.next;
     }
     while(new_task->status == T_DEAD) {
         new_task = new_task->next;
         if (new_task == NULL) {
-            panic("no undead task!");
+            task_root.next = NULL;
+            while(new_task == NULL) {
+                kmt_spin_unlock(&task_lk);
+                kmt_spin_lock(&task_lk);
+                new_task = task_root.next;
+                // panic("no task!");
+            }
+            
         }
     }
     task_root.next = new_task->next;
@@ -162,18 +175,22 @@ Context* kmt_schedule(Event event, Context* context) {
     kmt_spin_unlock(&task_lk);
 
     set_task(new_task);
+    TRACE_EXIT;
     return new_task->context;
 }
 
 static void kmt_init() {
     //TODO 
 
-    os->on_irq(INT_MIN, EVENT_NULL, kmt_context_save);
-    os->on_irq(INT_MAX, EVENT_NULL, kmt_schedule);
+    os->on_irq(0, EVENT_NULL, kmt_context_save);
+    os->on_irq(100, EVENT_NULL, kmt_schedule);
+    
+    
 }
 
 static int kmt_create (task_t* task, const char* name, void (*entry)(void* arg), void* arg) {
     //TODO
+    TRACE_ENTRY;
     task->stack = (uint8_t*)pmm->alloc(STACK_SIZE);
     Area area = RANGE(task->stack, (void*)task->stack + STACK_SIZE);
     task->context = kcontext(area, entry, arg);
@@ -190,13 +207,16 @@ static int kmt_create (task_t* task, const char* name, void (*entry)(void* arg),
     }
     before_task->next = task;
     kmt_spin_unlock(&task_lk);
+    TRACE_EXIT;
     return 0;
 }
 
 static void kmt_teardown (task_t* task) {
     //TODO
+    TRACE_ENTRY;
     pmm->free(task->stack);
     task->status = T_DEAD;
+    TRACE_EXIT;
 }
 
 MODULE_DEF(kmt) = {
