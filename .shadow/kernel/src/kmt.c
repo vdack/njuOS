@@ -144,15 +144,25 @@ Context* kmt_schedule(Event event, Context* context) {
     TRACE_ENTRY;
     task_t* new_task = NULL;
 
-    kmt_spin_lock(&task_lk);
-    new_task = task_root.next;
-    if (new_task == NULL) {
-        panic("no task!");
+    
+    while (new_task == NULL) {
+        kmt_spin_lock(&task_lk);
+        new_task = task_root.next;
+        // panic("no task!");
+        kmt_spin_unlock(&task_lk);
     }
     while(new_task->status == T_DEAD) {
+        kmt_spin_lock(&task_lk);
         new_task = new_task->next;
         if (new_task == NULL) {
-            panic("no undead task!");
+            task_root.next = NULL;
+            kmt_spin_unlock(&task_lk);
+            while(new_task == NULL) {
+                kmt_spin_lock(&task_lk);
+                new_task = task_root.next;
+                // panic("no task!");
+                kmt_spin_unlock(&task_lk);
+            }
         }
     }
     task_root.next = new_task->next;
