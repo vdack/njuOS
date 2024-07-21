@@ -9,6 +9,14 @@
 // Include these definitions in os.h.
 
 #ifndef _OS_H_
+
 #define _OS_H_
 #include<common.h>
+/*
+Your Codes Here. 
+line1 ... 
+line2 ...
+line3 ...
+...   ...
+*/
 #endif 
